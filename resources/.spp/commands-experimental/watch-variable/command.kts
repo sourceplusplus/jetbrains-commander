@@ -47,10 +47,7 @@ class WatchVariableCommand : LiveCommand() {
                 hitLimit = -1
         )).onComplete {
             if (it.succeeded()) {
-                val instrumentId = it.result().id!!
-                runReadAction {
-                    addInlay(context, selfId, instrumentId, variableName)
-                }
+                runReadAction { addInlay(context, selfId, it.result().id!!, variableName) }
             } else {
                 show(it.cause().message, notificationType = ERROR)
             }
