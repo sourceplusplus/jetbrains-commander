@@ -32,7 +32,6 @@ class LivePluginProjectListener : ProjectManagerListener {
     }
 
     override fun projectOpened(project: Project) {
-        if (!Settings.instance.runProjectSpecificPlugins) return
         @Suppress("UnstableApiUsage")
         if (!project.isTrusted()) {
             val message = "Skipped execution of project specific plugins because the project is not trusted."
