@@ -1,6 +1,6 @@
 import spp.plugin.*
 import spp.command.*
-import spp.jetbrains.marker.jvm.psi.EndpointDetector
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
 import spp.jetbrains.sourcemarker.PluginUI.*
