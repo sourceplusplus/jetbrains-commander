@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.await
 import spp.command.LiveCommand
 import spp.command.LiveCommandContext
-import spp.jetbrains.marker.SourceMarker
+import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
@@ -55,9 +55,7 @@ class WatchVariableCommand : LiveCommand() {
     }
 
     private fun addInlay(context: LiveCommandContext, selfId: String, instrumentId: String, variableName: String?) {
-        val inlay = SourceMarker.creationService.createExpressionInlayMark(
-                context.fileMarker, context.lineNumber, false
-        )
+        val inlay = ArtifactCreationService.createExpressionInlayMark(context.fileMarker, context.lineNumber, false)
         val virtualText = InlayMarkVirtualText(inlay, " // Live value: n/a")
         virtualText.useInlinePresentation = true
         virtualText.textAttributes.foregroundColor = Color.orange
