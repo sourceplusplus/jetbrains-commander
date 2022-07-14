@@ -12,10 +12,14 @@ import com.intellij.psi.PsiFile
 import liveplugin.implementation.common.livePluginId
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyAddToClasspathKeyword
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyDependsOnPluginKeyword
+import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyIndicatorScriptFile
+import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyIndicatorTestScriptFile
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyScriptFile
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.groovyTestScriptFile
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinAddToClasspathKeyword
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinDependsOnPluginKeyword
+import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinIndicatorScriptFile
+import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinIndicatorTestScriptFile
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinScriptFile
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinTestScriptFile
 
@@ -87,12 +91,14 @@ private val availableInKotlinLivePlugins = { editor: Editor, file: PsiFile ->
 
 private fun isGroovyPluginScript(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
-    return virtualFile.name == groovyScriptFile || virtualFile.name == groovyTestScriptFile
+    return virtualFile.name == groovyScriptFile || virtualFile.name == groovyTestScriptFile ||
+            virtualFile.name == groovyIndicatorScriptFile || virtualFile.name == groovyIndicatorTestScriptFile
 }
 
 private fun isKotlinPluginScript(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
-    return virtualFile.name == kotlinScriptFile || virtualFile.name == kotlinTestScriptFile
+    return virtualFile.name == kotlinScriptFile || virtualFile.name == kotlinTestScriptFile ||
+            virtualFile.name == kotlinIndicatorScriptFile || virtualFile.name == kotlinIndicatorTestScriptFile
 }
 
 private fun linesAboveCurrentAreImportOrPackage(editor: Editor): Boolean {

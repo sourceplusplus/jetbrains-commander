@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package liveplugin.implementation.command
+package liveplugin.implementation.indicator
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import spp.command.LiveCommand
+import spp.indicator.LiveIndicator
 import java.io.File
 
-interface LiveCommandService {
-    fun registerLiveCommand(command: LiveCommand)
-    fun unregisterLiveCommand(commandName: String)
-    fun getRegisteredLiveCommands(): List<LiveCommand>
+interface LiveIndicatorService {
+    fun registerLiveIndicator(indicator: LiveIndicator)
+    fun unregisterLiveIndicator(indicatorName: String)
+    fun getRegisteredLiveIndicators(): List<LiveIndicator>
 
     companion object {
-        val KEY = Key.create<LiveCommandService>("SPP_LIVE_COMMAND_SERVICE")
-        val LIVE_COMMAND_LOADER = Key.create<() -> Unit>("SPP_LIVE_COMMAND_LOADER")
-        val SPP_COMMANDS_LOCATION = Key.create<File>("SPP_COMMANDS_LOCATION")
+        val KEY = Key.create<LiveIndicatorService>("SPP_LIVE_INDICATOR_SERVICE")
+        val LIVE_INDICATOR_LOADER = Key.create<() -> Unit>("SPP_LIVE_INDICATOR_LOADER")
+        val SPP_INDICATORS_LOCATION = Key.create<File>("SPP_INDICATORS_LOCATION")
 
-        fun getInstance(project: Project): LiveCommandService {
+        fun getInstance(project: Project): LiveIndicatorService {
             return project.getUserData(KEY)!!
         }
     }

@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Computable
 import liveplugin.implementation.LivePluginPaths.livePluginLibPath
 import liveplugin.implementation.command.LiveCommandService
 import liveplugin.implementation.common.toFilePath
+import liveplugin.implementation.indicator.LiveIndicatorService
 import spp.jetbrains.monitor.skywalking.SkywalkingMonitor
 import spp.jetbrains.monitor.skywalking.SkywalkingMonitorService
 import java.io.File
@@ -32,6 +33,7 @@ abstract class LivePluginScriptForCompilation(
     project.getUserData(SkywalkingMonitor.LIVE_VIEW_SERVICE)!!,
     project.getUserData(SkywalkingMonitor.LIVE_INSTRUMENT_SERVICE),
     LiveCommandService.getInstance(project),
+    LiveIndicatorService.getInstance(project),
     SkywalkingMonitorService.getInstance(project)
 )
 

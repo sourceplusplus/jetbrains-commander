@@ -103,7 +103,7 @@ class Actions {
 	}
 
 	static runLivePlugin(@NotNull String pluginId, @NotNull Project project) {
-		RunPluginAction.runPlugins([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
+		RunPluginAction.runCommands([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
 	}
 
 	static unloadLivePlugin(@NotNull String pluginId) {

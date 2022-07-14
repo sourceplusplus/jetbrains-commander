@@ -100,6 +100,12 @@ class GroovyPluginRunner(
 
         val mainGroovyPluginRunner = GroovyPluginRunner(groovyScriptFile)
         val testGroovyPluginRunner = GroovyPluginRunner(groovyTestScriptFile)
+
+        const val groovyIndicatorScriptFile = "indicator.groovy"
+        const val groovyIndicatorTestScriptFile = "indicator.groovy"
+
+        val mainGroovyIndicatorRunner = GroovyPluginRunner(groovyIndicatorScriptFile)
+        val testGroovyIndicatorRunner = GroovyPluginRunner(groovyIndicatorTestScriptFile)
     }
 }
 

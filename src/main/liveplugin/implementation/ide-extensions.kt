@@ -67,7 +67,7 @@ class LivePluginDeletedListener : BulkFileListener {
     }
 }
 
-class LivePluginDirectoryCompletionContributor : CreateDirectoryCompletionContributor {
+class LiveCommandDirectoryCompletionContributor : CreateDirectoryCompletionContributor {
     override fun getDescription() = "Project specific live commands"
     override fun getVariants(directory: PsiDirectory): List<Variant> =
         if (directory.project.basePath != directory.virtualFile.path) {
@@ -75,6 +75,16 @@ class LivePluginDirectoryCompletionContributor : CreateDirectoryCompletionContri
                 listOf(Variant("commands", UnknownSourceRootType.getInstance("LivePlugin")))
             } else emptyList()
         } else listOf(Variant(".spp/commands", UnknownSourceRootType.getInstance("LivePlugin")))
+}
+
+class LiveIndicatorDirectoryCompletionContributor : CreateDirectoryCompletionContributor {
+    override fun getDescription() = "Project specific live indicators"
+    override fun getVariants(directory: PsiDirectory): List<Variant> =
+        if (directory.project.basePath != directory.virtualFile.path) {
+            if (directory.virtualFile.name == ".spp" && directory.project.basePath == directory.virtualFile.parent.path) {
+                listOf(Variant("indicators", UnknownSourceRootType.getInstance("LivePlugin")))
+            } else emptyList()
+        } else listOf(Variant(".spp/indicators", UnknownSourceRootType.getInstance("LivePlugin")))
 }
 
 class MakePluginFilesAlwaysEditable : NonProjectFileWritingAccessExtension {

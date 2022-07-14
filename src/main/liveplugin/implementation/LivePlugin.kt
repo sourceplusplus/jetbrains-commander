@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
 import liveplugin.implementation.LivePluginPaths.livePluginsPath
-import liveplugin.implementation.LivePluginPaths.livePluginsProjectDirName
 import liveplugin.implementation.common.FilePath
 import liveplugin.implementation.common.selectedFiles
 import liveplugin.implementation.common.toFilePath
@@ -33,6 +32,7 @@ fun FilePath.isPluginFolder(): Boolean {
     if (!isDirectory && exists()) return false
     val parentPath = parent ?: return false
     return parentPath == livePluginsPath || (parentPath.value.endsWith("/.spp/commands"))
+            || (parentPath.value.endsWith("/.spp/indicators"))
 }
 
 object LivePluginPaths {
@@ -44,5 +44,6 @@ object LivePluginPaths {
     // Use scratches location because it's more standard for keeping scripts, e.g. from IDE console.
     val livePluginsCompiledPath = PathManager.getScratchPath().toFilePath() + "live-plugins-compiled"
     @JvmField val livePluginsPath = PathManager.getScratchPath().toFilePath() + "live-plugins"
-    val livePluginsProjectDirName = ".spp/commands"
+    val liveCommandsProjectDirName = ".spp/commands"
+    val liveIndicatorsProjectDirName = ".spp/indicators"
 }

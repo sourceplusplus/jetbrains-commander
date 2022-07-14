@@ -15,25 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package liveplugin.implementation.command
+package spp.indicator
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import spp.command.LiveCommand
-import java.io.File
+import com.intellij.openapi.application.ApplicationManager
+import kotlinx.coroutines.runBlocking
+import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
+import spp.jetbrains.marker.source.mark.guide.GuideMark
 
-interface LiveCommandService {
-    fun registerLiveCommand(command: LiveCommand)
-    fun unregisterLiveCommand(commandName: String)
-    fun getRegisteredLiveCommands(): List<LiveCommand>
+@Suppress("unused")
+abstract class LiveIndicator {
+    abstract val name: String
+    open val listenForEvents: List<SourceMarkEventCode> = emptyList()
 
-    companion object {
-        val KEY = Key.create<LiveCommandService>("SPP_LIVE_COMMAND_SERVICE")
-        val LIVE_COMMAND_LOADER = Key.create<() -> Unit>("SPP_LIVE_COMMAND_LOADER")
-        val SPP_COMMANDS_LOCATION = Key.create<File>("SPP_COMMANDS_LOCATION")
-
-        fun getInstance(project: Project): LiveCommandService {
-            return project.getUserData(KEY)!!
+    open fun trigger(guideMark: GuideMark) {
+        ApplicationManager.getApplication().runReadAction {
+            runBlocking {
+                triggerSuspend(guideMark)
+            }
         }
     }
+
+    open suspend fun triggerSuspend(guideMark: GuideMark) = Unit
 }

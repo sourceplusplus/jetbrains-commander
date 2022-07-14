@@ -31,23 +31,26 @@ import liveplugin.implementation.pluginrunner.AnError.RunningError
 import liveplugin.implementation.pluginrunner.Binding
 import liveplugin.implementation.pluginrunner.PluginRunner
 import liveplugin.implementation.pluginrunner.canBeHandledBy
+import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyIndicatorRunner
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyPluginRunner
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.testGroovyPluginRunner
+import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinIndicatorRunner
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinPluginRunner
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.testKotlinPluginRunner
 
-private val pluginRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
+private val commandRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
+private val indicatorRunners = listOf(mainGroovyIndicatorRunner, mainKotlinIndicatorRunner)
 private val pluginTestRunners = listOf(testGroovyPluginRunner, testKotlinPluginRunner)
 
 class RunPluginAction: AnAction("Load Command", "Load live command", runPluginIcon), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
-        runPlugins(event.livePlugins(), event)
+        runCommands(event.livePlugins(), event)
     }
 
     override fun update(event: AnActionEvent) {
         val livePlugins = event.livePlugins()
-        event.presentation.isEnabled = livePlugins.canBeHandledBy(pluginRunners)
+        event.presentation.isEnabled = livePlugins.canBeHandledBy(commandRunners)
         if (event.presentation.isEnabled) {
             val hasPluginsToUnload = livePlugins.any { it.canBeUnloaded() }
             val actionName = if (hasPluginsToUnload) "Re-load" else "Load"
@@ -57,8 +60,12 @@ class RunPluginAction: AnAction("Load Command", "Load live command", runPluginIc
     }
 
     companion object {
-        @JvmStatic fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginRunners, event) }
+        @JvmStatic fun runCommands(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
+            livePlugins.forEach { it.runWith(commandRunners, event) }
+        }
+
+        @JvmStatic fun runIndicators(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
+            livePlugins.forEach { it.runWith(indicatorRunners, event) }
         }
 
         @JvmStatic fun runPluginsTests(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
@@ -109,7 +116,7 @@ private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActio
     val pluginRunner = pluginRunners.find { path.find(it.scriptName) != null }
         ?: return displayError(id, LoadingError(message = "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"), project)
 
-    runInBackground(project, "Running live-command '$id'") {
+    runInBackground(project, "Loading $id") {
         pluginRunner.setup(this, project)
             .flatMap { runOnEdt { pluginRunner.run(it, binding) } }
             .peekFailure { displayError(id, it, project) }
