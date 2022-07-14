@@ -116,11 +116,9 @@ private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActio
     val pluginRunner = pluginRunners.find { path.find(it.scriptName) != null }
         ?: return displayError(id, LoadingError(message = "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"), project)
 
-    runInBackground(project, "Loading $id") {
-        pluginRunner.setup(this, project)
-            .flatMap { runOnEdt { pluginRunner.run(it, binding) } }
-            .peekFailure { displayError(id, it, project) }
-    }
+    pluginRunner.setup(this, project)
+        .flatMap { runOnEdt { pluginRunner.run(it, binding) } }
+        .peekFailure { displayError(id, it, project) }
 }
 
 private fun runInBackground(project: Project?, taskDescription: String, function: () -> Any) {
