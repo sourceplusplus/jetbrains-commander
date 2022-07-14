@@ -19,7 +19,6 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class SlowEndpointIndicator : LiveIndicator() {
-    override val name = "slow-endpoint"
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
     override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {

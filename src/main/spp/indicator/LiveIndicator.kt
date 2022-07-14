@@ -25,7 +25,6 @@ import spp.jetbrains.marker.source.mark.guide.GuideMark
 
 @Suppress("unused")
 abstract class LiveIndicator {
-    abstract val name: String
     open val listenForEvents: List<SourceMarkEventCode> = emptyList()
 
     open fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {

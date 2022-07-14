@@ -24,7 +24,7 @@ import java.io.File
 
 interface LiveIndicatorService {
     fun registerLiveIndicator(indicator: LiveIndicator)
-    fun unregisterLiveIndicator(indicatorName: String)
+    fun unregisterLiveIndicator(indicator: LiveIndicator)
     fun getRegisteredLiveIndicators(): List<LiveIndicator>
 
     companion object {

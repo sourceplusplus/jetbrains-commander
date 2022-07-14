@@ -39,8 +39,8 @@ class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
         indicators[indicator] = eventListener
     }
 
-    override fun unregisterLiveIndicator(indicatorName: String) {
-        indicators.filter { it.key.name == indicatorName }.firstOrNull()?.let {
+    override fun unregisterLiveIndicator(indicator: LiveIndicator) {
+        indicators.filter { it.key == indicator }.firstOrNull()?.let {
             SourceMarker.removeGlobalSourceMarkEventListener(it.value)
             indicators.remove(it.key)
         }

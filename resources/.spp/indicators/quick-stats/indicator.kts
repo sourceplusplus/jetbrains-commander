@@ -34,9 +34,8 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class QuickStatsIndicator : LiveIndicator() {
-    override val name = "quick-stats"
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
-    private val inlayForegroundColor = JBColor(Color.decode("#3e464a"), Color.decode("#87939a"))
+    private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
 
     override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
         if (EndpointDetector.ENDPOINT_ID != event.params.firstOrNull()) return
@@ -44,7 +43,6 @@ class QuickStatsIndicator : LiveIndicator() {
     }
 
     private suspend fun displayQuickStatsInlay(sourceMark: SourceMark) {
-        //log.info("Displaying quick stats inlay for {}", sourceMark.artifactQualifiedName.identifier)
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = if (swVersion.startsWith("9")) {
             listOf("endpoint_cpm", "endpoint_resp_time", "endpoint_sla")
@@ -73,9 +71,11 @@ class QuickStatsIndicator : LiveIndicator() {
             (sourceMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
             false
         )
-//        inlay.putUserData(SHOWING_QUICK_STATS, true)
         inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metricResult))
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
+        inlay.configuration.virtualText!!.fontSize = -0.5f
+        inlay.configuration.virtualText!!.relativeFontSize = true
+        inlay.configuration.virtualText!!.xOffset = 5
 //        if (PluginBundle.LOCALE.language == "zh") {
 //            inlay.configuration.virtualText!!.font = PluginUI.MICROSOFT_YAHEI_PLAIN_14
 //            inlay.configuration.virtualText!!.xOffset = 15
@@ -99,7 +99,6 @@ class QuickStatsIndicator : LiveIndicator() {
                 vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(selfId)) {
                     val viewEvent = Json.decodeValue(it.body().toString(), LiveViewEvent::class.java)
                     if (viewEvent.subscriptionId != subscriptionId) return@consumer
-//                    log.trace("Received updated quick stats for {}", sourceMark.artifactQualifiedName.identifier)
                     consumeLiveEvent(viewEvent, previousMetrics)
 
                     val twoMinAgoValue = previousMetrics[viewEvent.timeBucket.toLong() - 2]
@@ -113,7 +112,7 @@ class QuickStatsIndicator : LiveIndicator() {
                     }
                 }
             } else {
-//                log.error("Failed to add live view subscription", it.cause())
+                show(it.cause.message!!)
             }
         }
     }
@@ -129,7 +128,7 @@ class QuickStatsIndicator : LiveIndicator() {
         val sla = result.artifactMetrics.find { it.metricType == MetricType.ServiceLevelAgreement_Average }!!
         sb.append(message(sla.metricType.simpleName)).append(": ").append(sla.values.last().toDouble() / 100.0)
             .append("%")
-        return "/#/ " + sb.toString() + " \\#\\"
+        return "/#/ $sb \\#\\"
     }
 
     private fun consumeLiveEvent(event: LiveViewEvent, previousMetrics: MutableMap<Long, String>) {
@@ -155,11 +154,11 @@ class QuickStatsIndicator : LiveIndicator() {
                 sb.append(" | ")
             }
         }
-        previousMetrics[event.timeBucket.toLong()] = "/#/ " + sb.toString() + " \\#\\"
+        previousMetrics[event.timeBucket.toLong()] = "/#/ $sb \\#\\"
     }
 
     private fun message(message: String): String {
-        return message
+        return message //todo: PluginBundle.message
     }
 }
 

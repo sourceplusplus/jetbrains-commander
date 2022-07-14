@@ -19,7 +19,6 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class FailingEndpointIndicator : LiveIndicator() {
-    override val name = "failing-endpoint"
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
     override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {

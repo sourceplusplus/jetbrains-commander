@@ -25,7 +25,7 @@ fun LivePluginScript.registerIndicator(liveIndicator: LiveIndicator) {
     LiveIndicatorService.getInstance(project).registerLiveIndicator(liveIndicator)
 
     pluginDisposable.whenDisposed {
-        LiveIndicatorService.getInstance(project).unregisterLiveIndicator(liveIndicator.name)
+        LiveIndicatorService.getInstance(project).unregisterLiveIndicator(liveIndicator)
     }
 }
 
