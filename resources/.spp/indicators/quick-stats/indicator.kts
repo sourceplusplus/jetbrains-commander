@@ -83,7 +83,6 @@ class QuickStatsIndicator : LiveIndicator() {
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
-        val selfId = liveService.getSelf().await().developer.id
         SourceServices.Instance.liveView!!.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
@@ -96,9 +95,8 @@ class QuickStatsIndicator : LiveIndicator() {
             if (it.succeeded()) {
                 val subscriptionId = it.result().subscriptionId!!
                 val previousMetrics = mutableMapOf<Long, String>()
-                vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(selfId)) {
+                vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId)) {
                     val viewEvent = Json.decodeValue(it.body().toString(), LiveViewEvent::class.java)
-                    if (viewEvent.subscriptionId != subscriptionId) return@consumer
                     consumeLiveEvent(viewEvent, previousMetrics)
 
                     val twoMinAgoValue = previousMetrics[viewEvent.timeBucket.toLong() - 2]
