@@ -28,14 +28,13 @@ import java.time.temporal.ChronoUnit
 
 class SlowEndpointIndicator : LiveIndicator() {
 
-    private val log = LoggerFactory.getLogger("spp.indicator.SlowEndpointIndicator")
-    private val ENDPOINT_SLOW_STARTED = object : IEventCode {
-        override fun code(): Int = -9390
+    companion object {
+        private val log = LoggerFactory.getLogger("spp.indicator.SlowEndpointIndicator")
+        private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
+        private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
     }
-    private val ENDPOINT_SLOW_STOPPED = object : IEventCode {
-        override fun code(): Int = -9391
-    }
-    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, ENDPOINT_SLOW_STARTED, ENDPOINT_SLOW_STOPPED)
+
+    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val slowEndpoints = mutableMapOf<String, GuideMark>()
     private val slowIndicators = mutableMapOf<GuideMark, GutterMark>()
 
@@ -59,7 +58,7 @@ class SlowEndpointIndicator : LiveIndicator() {
 
                 findByEndpointName(endpointName)?.let { guideMark ->
                     slowEndpoints[endpointName] = guideMark
-                    guideMark.triggerEvent(ENDPOINT_SLOW_STARTED, listOf())
+                    guideMark.triggerEvent(INDICATOR_STARTED, listOf())
                 }
             }
         }
@@ -68,7 +67,7 @@ class SlowEndpointIndicator : LiveIndicator() {
         slowEndpoints.toMap().forEach {
             if (!currentSlowest.map { it.getString("name") }.contains(it.key)) {
                 log.debug("Endpoint $it is no longer slow")
-                slowEndpoints.remove(it.key)?.triggerEvent(ENDPOINT_SLOW_STOPPED, listOf())
+                slowEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
             }
         }
     }
@@ -79,7 +78,7 @@ class SlowEndpointIndicator : LiveIndicator() {
         }
 
         when (event.eventCode) {
-            ENDPOINT_SLOW_STARTED -> {
+            INDICATOR_STARTED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
                     log.info("Adding slow endpoint indicator for: $endpointName")
@@ -94,7 +93,7 @@ class SlowEndpointIndicator : LiveIndicator() {
                     slowIndicators[guideMark] = gutterMark
                 }
             }
-            ENDPOINT_SLOW_STOPPED -> {
+            INDICATOR_STOPPED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
                     val gutterMark = slowIndicators.remove(guideMark) ?: return@runReadAction

@@ -28,14 +28,13 @@ import java.time.temporal.ChronoUnit
 
 class FailingEndpointIndicator : LiveIndicator() {
 
-    private val log = LoggerFactory.getLogger("spp.indicator.FailingEndpointIndicator")
-    private val ENDPOINT_FAILING_STARTED = object : IEventCode {
-        override fun code(): Int = -9392
+    companion object {
+        private val log = LoggerFactory.getLogger("spp.indicator.FailingEndpointIndicator")
+        private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
+        private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
     }
-    private val ENDPOINT_FAILING_STOPPED = object : IEventCode {
-        override fun code(): Int = -9393
-    }
-    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, ENDPOINT_FAILING_STARTED, ENDPOINT_FAILING_STOPPED)
+
+    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val failingEndpoints = mutableMapOf<String, GuideMark>()
     private val failingIndicators = mutableMapOf<GuideMark, GutterMark>()
 
@@ -59,7 +58,7 @@ class FailingEndpointIndicator : LiveIndicator() {
 
                 findByEndpointName(endpointName)?.let { guideMark ->
                     failingEndpoints[endpointName] = guideMark
-                    guideMark.triggerEvent(ENDPOINT_FAILING_STARTED, listOf())
+                    guideMark.triggerEvent(INDICATOR_STARTED, listOf())
                 }
             }
         }
@@ -68,7 +67,7 @@ class FailingEndpointIndicator : LiveIndicator() {
         failingEndpoints.toMap().forEach {
             if (!currentFailing.map { it.getString("name") }.contains(it.key)) {
                 log.debug("Endpoint $it is no longer failing")
-                failingEndpoints.remove(it.key)?.triggerEvent(ENDPOINT_FAILING_STOPPED, listOf())
+                failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
             }
         }
     }
@@ -79,7 +78,7 @@ class FailingEndpointIndicator : LiveIndicator() {
         }
 
         when (event.eventCode) {
-            ENDPOINT_FAILING_STARTED -> {
+            INDICATOR_STARTED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
                     log.info("Adding failing endpoint indicator for: $endpointName")
@@ -94,7 +93,7 @@ class FailingEndpointIndicator : LiveIndicator() {
                     failingIndicators[guideMark] = gutterMark
                 }
             }
-            ENDPOINT_FAILING_STOPPED -> {
+            INDICATOR_STOPPED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
                     val gutterMark = failingIndicators.remove(guideMark) ?: return@runReadAction
