@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import monitor.skywalking.protocol.type.Order
 import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
+import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -23,6 +24,8 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class FailingEndpointIndicator : LiveIndicator() {
+
+    private val log = LoggerFactory.getLogger("spp.indicator.FailingEndpointIndicator")
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
     override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
@@ -32,6 +35,7 @@ class FailingEndpointIndicator : LiveIndicator() {
 
         if (failingEndpoints.contains(endpointName)) {
             ApplicationManager.getApplication().runReadAction {
+                log.info("Failing endpoint detected: $endpointName")
                 val gutterMark = ArtifactCreationService.createMethodGutterMark(
                     guideMark.sourceFileMarker,
                     (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
@@ -45,7 +49,8 @@ class FailingEndpointIndicator : LiveIndicator() {
                 vertx.setPeriodic(5000) { periodicId ->
                     GlobalScope.launch(vertx.dispatcher()) {
                         if (!getTopFailingEndpoints().contains(endpointName)) {
-                            gutterMark.sourceFileMarker.removeSourceMark(gutterMark)
+                            log.info("Failing endpoint removed: $endpointName")
+                            gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
                             vertx.cancelTimer(periodicId)
                         }
                     }
