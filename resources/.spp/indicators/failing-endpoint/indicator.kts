@@ -8,6 +8,7 @@ import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
+import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
@@ -21,8 +22,9 @@ class FailingEndpointIndicator : LiveIndicator() {
     override val name = "failing-endpoint"
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
-    override suspend fun triggerSuspend(guideMark: GuideMark) {
+    override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
         val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME) ?: return
+        if (EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) return
         val failingEndpoints = getTop10FailingEndpoints()
 
         if (failingEndpoints.contains(endpointName)) {
