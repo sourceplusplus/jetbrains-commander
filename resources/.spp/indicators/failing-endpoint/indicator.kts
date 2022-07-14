@@ -29,9 +29,9 @@ class FailingEndpointIndicator : LiveIndicator() {
         if (failingEndpoints.contains(endpointName)) {
             ApplicationManager.getApplication().runReadAction {
                 val gutterMark = ArtifactCreationService.createMethodGutterMark(
-                        guideMark.sourceFileMarker,
-                        (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
-                        false
+                    guideMark.sourceFileMarker,
+                    (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                    false
                 )
                 gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
                 gutterMark.configuration.icon = findIcon("failing-endpoint/icons/failing-endpoint.svg")
@@ -44,16 +44,21 @@ class FailingEndpointIndicator : LiveIndicator() {
         val endTime = ZonedDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(30)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
-        val failingEndpoints = skywalkingMonitorService.sortMetrics(TopNCondition(
+        val failingEndpoints = skywalkingMonitorService.sortMetrics(
+            TopNCondition(
                 "endpoint_sla",
                 Optional.presentIfNotNull(skywalkingMonitorService.getCurrentService().name),
                 Optional.presentIfNotNull(true),
                 Optional.presentIfNotNull(Scope.Endpoint),
                 3, //todo: relative 10%
                 Order.ASC
-        ), duration)
+            ), duration
+        )
 
-        return failingEndpoints.map { (it as JsonObject).getString("name") }
+        return failingEndpoints
+            .map { (it as JsonObject) }
+            .filter { it.getString("value").toDouble() < 10000.0 }
+            .map { it.getString("name") }
     }
 }
 
