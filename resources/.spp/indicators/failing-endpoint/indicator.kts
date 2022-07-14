@@ -88,7 +88,7 @@ class FailingEndpointIndicator : LiveIndicator() {
                         false
                     )
                     gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
-                    gutterMark.configuration.icon = findIcon("failing-endpoint/icons/failing-endpoint.svg")
+                    gutterMark.configuration.icon = findIcon("icons/failing-endpoint.svg")
                     gutterMark.apply(true)
                     failingIndicators[guideMark] = gutterMark
                 }
@@ -126,6 +126,10 @@ class FailingEndpointIndicator : LiveIndicator() {
     }
 
     private fun findByEndpointName(endpointName: String): GuideMark? {
+        if (!SourceMarker.enabled) {
+            log.warn("SourceMarker is disabled. Cannot find guide mark by endpoint name")
+            return null
+        }
         return SourceMarker.getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
             it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
         }

@@ -88,7 +88,7 @@ class SlowEndpointIndicator : LiveIndicator() {
                         false
                     )
                     gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
-                    gutterMark.configuration.icon = findIcon("slow-endpoint/icons/slow-endpoint.svg")
+                    gutterMark.configuration.icon = findIcon("icons/slow-endpoint.svg")
                     gutterMark.apply(true)
                     slowIndicators[guideMark] = gutterMark
                 }
@@ -124,6 +124,10 @@ class SlowEndpointIndicator : LiveIndicator() {
     }
 
     private fun findByEndpointName(endpointName: String): GuideMark? {
+        if (!SourceMarker.enabled) {
+            log.warn("SourceMarker is disabled. Cannot find guide mark by endpoint name")
+            return null
+        }
         return SourceMarker.getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
             it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
         }
