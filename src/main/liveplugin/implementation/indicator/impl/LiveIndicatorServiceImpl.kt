@@ -32,7 +32,7 @@ class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
     override fun registerLiveIndicator(indicator: LiveIndicator) {
         val eventListener = SourceMarkEventListener {
             if (indicator.listenForEvents.contains(it.eventCode) && it.sourceMark is GuideMark) {
-                indicator.trigger(it.sourceMark as GuideMark)
+                indicator.trigger(it.sourceMark as GuideMark, it)
             }
         }
         SourceMarker.addGlobalSourceMarkEventListener(eventListener)

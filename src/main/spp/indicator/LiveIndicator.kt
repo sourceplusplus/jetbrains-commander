@@ -19,6 +19,7 @@ package spp.indicator
 
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.runBlocking
+import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 
@@ -27,13 +28,13 @@ abstract class LiveIndicator {
     abstract val name: String
     open val listenForEvents: List<SourceMarkEventCode> = emptyList()
 
-    open fun trigger(guideMark: GuideMark) {
+    open fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         ApplicationManager.getApplication().runReadAction {
             runBlocking {
-                triggerSuspend(guideMark)
+                triggerSuspend(guideMark, event)
             }
         }
     }
 
-    open suspend fun triggerSuspend(guideMark: GuideMark) = Unit
+    open suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) = Unit
 }
