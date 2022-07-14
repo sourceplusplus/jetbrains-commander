@@ -41,8 +41,8 @@ class FailingEndpointIndicator : LiveIndicator() {
     }
 
     private suspend fun getTop10FailingEndpoints(): List<String> {
-        val endTime = ZonedDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
-        val startTime = endTime.minusMinutes(30)
+        val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
+        val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         val failingEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
