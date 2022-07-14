@@ -9,12 +9,15 @@ import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
 import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
+import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
+import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
+import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
@@ -26,40 +29,84 @@ import java.time.temporal.ChronoUnit
 class FailingEndpointIndicator : LiveIndicator() {
 
     private val log = LoggerFactory.getLogger("spp.indicator.FailingEndpointIndicator")
-    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
+    private val ENDPOINT_FAILING_STARTED = object : IEventCode {
+        override fun code(): Int = -9392
+    }
+    private val ENDPOINT_FAILING_STOPPED = object : IEventCode {
+        override fun code(): Int = -9393
+    }
+    override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, ENDPOINT_FAILING_STARTED, ENDPOINT_FAILING_STOPPED)
+    private val failingEndpoints = mutableMapOf<String, GuideMark>()
+    private val failingIndicators = mutableMapOf<GuideMark, GutterMark>()
 
-    override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
-        val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME) ?: return
-        if (EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) return
-        val failingEndpoints = getTopFailingEndpoints()
-
-        if (failingEndpoints.contains(endpointName)) {
-            ApplicationManager.getApplication().runReadAction {
-                log.info("Failing endpoint detected: $endpointName")
-                val gutterMark = ArtifactCreationService.createMethodGutterMark(
-                    guideMark.sourceFileMarker,
-                    (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
-                    false
-                )
-                gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
-                gutterMark.configuration.icon = findIcon("failing-endpoint/icons/failing-endpoint.svg")
-                gutterMark.apply(true)
-
-                //ensure still failing
-                vertx.setPeriodic(5000) { periodicId ->
-                    GlobalScope.launch(vertx.dispatcher()) {
-                        if (!getTopFailingEndpoints().contains(endpointName)) {
-                            log.info("Failing endpoint removed: $endpointName")
-                            gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
-                            vertx.cancelTimer(periodicId)
-                        }
-                    }
-                }
+    override suspend fun onRegister() {
+        vertx.setPeriodic(5000) {
+            GlobalScope.launch(vertx.dispatcher()) {
+                refreshIndicators()
             }
         }
     }
 
-    private suspend fun getTopFailingEndpoints(): List<String> {
+    private suspend fun refreshIndicators() {
+        val currentFailing = getTopFailingEndpoints()
+
+        //trigger adds
+        currentFailing.forEach {
+            val endpointName = it.getString("name")
+            val sla = it.getString("value").toFloat()
+            if (!failingEndpoints.containsKey(endpointName)) {
+                log.debug("Endpoint $endpointName is failing. SLA: $sla")
+
+                findByEndpointName(endpointName)?.let { guideMark ->
+                    failingEndpoints[endpointName] = guideMark
+                    guideMark.triggerEvent(ENDPOINT_FAILING_STARTED, listOf())
+                }
+            }
+        }
+
+        //trigger removes
+        failingEndpoints.toMap().forEach {
+            if (!currentFailing.map { it.getString("name") }.contains(it.key)) {
+                log.debug("Endpoint $it is no longer failing")
+                failingEndpoints.remove(it.key)?.triggerEvent(ENDPOINT_FAILING_STOPPED, listOf())
+            }
+        }
+    }
+
+    override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
+        if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) {
+            return //ignore other user data updates
+        }
+
+        when (event.eventCode) {
+            ENDPOINT_FAILING_STARTED -> {
+                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                ApplicationManager.getApplication().runReadAction {
+                    log.info("Adding failing endpoint indicator for: $endpointName")
+                    val gutterMark = ArtifactCreationService.createMethodGutterMark(
+                        guideMark.sourceFileMarker,
+                        (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                        false
+                    )
+                    gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
+                    gutterMark.configuration.icon = findIcon("failing-endpoint/icons/failing-endpoint.svg")
+                    gutterMark.apply(true)
+                    failingIndicators[guideMark] = gutterMark
+                }
+            }
+            ENDPOINT_FAILING_STOPPED -> {
+                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                ApplicationManager.getApplication().runReadAction {
+                    val gutterMark = failingIndicators.remove(guideMark) ?: return@runReadAction
+                    log.info("Removing failing endpoint indicator for: $endpointName")
+                    gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
+                }
+            }
+            else -> refreshIndicators()
+        }
+    }
+
+    private suspend fun getTopFailingEndpoints(): List<JsonObject> {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
@@ -77,7 +124,12 @@ class FailingEndpointIndicator : LiveIndicator() {
         return failingEndpoints
             .map { (it as JsonObject) }
             .filter { it.getString("value").toDouble() < 10000.0 }
-            .map { it.getString("name") }
+    }
+
+    private fun findByEndpointName(endpointName: String): GuideMark? {
+        return SourceMarker.getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
+            it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
+        }
     }
 }
 

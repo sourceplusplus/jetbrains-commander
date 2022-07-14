@@ -1,8 +1,10 @@
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.await
+import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -34,10 +36,12 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class QuickStatsIndicator : LiveIndicator() {
+
+    private val log = LoggerFactory.getLogger("spp.indicator.QuickStatsIndicator")
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
     private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
 
-    override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
+    override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         if (EndpointDetector.ENDPOINT_ID != event.params.firstOrNull()) return
         displayQuickStatsInlay(guideMark)
     }
@@ -66,16 +70,17 @@ class QuickStatsIndicator : LiveIndicator() {
             currentMetrics
         )
 
-        val inlay = ArtifactCreationService.createMethodInlayMark(
-            sourceMark.sourceFileMarker,
-            (sourceMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
-            false
-        )
+        val inlay = ApplicationManager.getApplication().runReadAction(Computable {
+            ArtifactCreationService.createMethodInlayMark(
+                sourceMark.sourceFileMarker,
+                (sourceMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                false
+            )
+        })
         inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metricResult))
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
         inlay.configuration.virtualText!!.fontSize = -0.5f
         inlay.configuration.virtualText!!.relativeFontSize = true
-        inlay.configuration.virtualText!!.xOffset = 5
 //        if (PluginBundle.LOCALE.language == "zh") {
 //            inlay.configuration.virtualText!!.font = PluginUI.MICROSOFT_YAHEI_PLAIN_14
 //            inlay.configuration.virtualText!!.xOffset = 15
@@ -126,7 +131,7 @@ class QuickStatsIndicator : LiveIndicator() {
         val sla = result.artifactMetrics.find { it.metricType == MetricType.ServiceLevelAgreement_Average }!!
         sb.append(message(sla.metricType.simpleName)).append(": ").append(sla.values.last().toDouble() / 100.0)
             .append("%")
-        return "/#/ $sb \\#\\"
+        return "$sb"
     }
 
     private fun consumeLiveEvent(event: LiveViewEvent, previousMetrics: MutableMap<Long, String>) {
@@ -152,7 +157,7 @@ class QuickStatsIndicator : LiveIndicator() {
                 sb.append(" | ")
             }
         }
-        previousMetrics[event.timeBucket.toLong()] = "/#/ $sb \\#\\"
+        previousMetrics[event.timeBucket.toLong()] = "$sb"
     }
 
     private fun message(message: String): String {

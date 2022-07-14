@@ -17,23 +17,15 @@
  */
 package spp.indicator
 
-import com.intellij.openapi.application.ApplicationManager
-import kotlinx.coroutines.runBlocking
+import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 
 @Suppress("unused")
 abstract class LiveIndicator {
-    open val listenForEvents: List<SourceMarkEventCode> = emptyList()
+    open val listenForEvents: List<IEventCode> = emptyList()
 
-    open fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
-        ApplicationManager.getApplication().runReadAction {
-            runBlocking {
-                triggerSuspend(guideMark, event)
-            }
-        }
-    }
-
-    open suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) = Unit
+    open suspend fun onRegister() = Unit
+    open suspend fun onUnregister() = Unit
+    open suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) = Unit
 }

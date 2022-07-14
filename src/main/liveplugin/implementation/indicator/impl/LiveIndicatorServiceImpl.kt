@@ -19,6 +19,7 @@ package liveplugin.implementation.indicator.impl
 
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.firstOrNull
+import kotlinx.coroutines.runBlocking
 import liveplugin.implementation.indicator.LiveIndicatorService
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
@@ -32,17 +33,27 @@ class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
     override fun registerLiveIndicator(indicator: LiveIndicator) {
         val eventListener = SourceMarkEventListener {
             if (indicator.listenForEvents.contains(it.eventCode) && it.sourceMark is GuideMark) {
-                indicator.trigger(it.sourceMark as GuideMark, it)
+                runBlocking {
+                    indicator.trigger(it.sourceMark as GuideMark, it)
+                }
             }
         }
         SourceMarker.addGlobalSourceMarkEventListener(eventListener)
         indicators[indicator] = eventListener
+
+        runBlocking {
+            indicator.onRegister()
+        }
     }
 
     override fun unregisterLiveIndicator(indicator: LiveIndicator) {
         indicators.filter { it.key == indicator }.firstOrNull()?.let {
             SourceMarker.removeGlobalSourceMarkEventListener(it.value)
             indicators.remove(it.key)
+
+            runBlocking {
+                indicator.onUnregister()
+            }
         }
     }
 
