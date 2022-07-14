@@ -1,6 +1,9 @@
 import com.apollographql.apollo3.api.Optional
 import com.intellij.openapi.application.ApplicationManager
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import monitor.skywalking.protocol.type.Order
 import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
@@ -13,6 +16,7 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
+import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.*
 import spp.plugin.registerIndicator
 import java.time.ZonedDateTime
@@ -24,7 +28,7 @@ class FailingEndpointIndicator : LiveIndicator() {
     override suspend fun triggerSuspend(guideMark: GuideMark, event: SourceMarkEvent) {
         val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME) ?: return
         if (EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) return
-        val failingEndpoints = getTop10FailingEndpoints()
+        val failingEndpoints = getTopFailingEndpoints()
 
         if (failingEndpoints.contains(endpointName)) {
             ApplicationManager.getApplication().runReadAction {
@@ -36,11 +40,21 @@ class FailingEndpointIndicator : LiveIndicator() {
                 gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
                 gutterMark.configuration.icon = findIcon("failing-endpoint/icons/failing-endpoint.svg")
                 gutterMark.apply(true)
+
+                //ensure still failing
+                vertx.setPeriodic(5000) { periodicId ->
+                    GlobalScope.launch(vertx.dispatcher()) {
+                        if (!getTopFailingEndpoints().contains(endpointName)) {
+                            gutterMark.sourceFileMarker.removeSourceMark(gutterMark)
+                            vertx.cancelTimer(periodicId)
+                        }
+                    }
+                }
             }
         }
     }
 
-    private suspend fun getTop10FailingEndpoints(): List<String> {
+    private suspend fun getTopFailingEndpoints(): List<String> {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
