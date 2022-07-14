@@ -112,7 +112,7 @@ class QuickStatsIndicator : LiveIndicator() {
                     }
                 }
             } else {
-                show(it.cause.message!!)
+                show(it.cause().message!!)
             }
         }
     }
