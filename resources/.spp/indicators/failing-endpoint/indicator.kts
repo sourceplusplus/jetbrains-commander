@@ -9,7 +9,6 @@ import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
 import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
-import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
@@ -22,7 +21,6 @@ import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.*
-import spp.plugin.registerIndicator
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
@@ -123,16 +121,6 @@ class FailingEndpointIndicator : LiveIndicator() {
         return failingEndpoints
             .map { (it as JsonObject) }
             .filter { it.getString("value").toDouble() < 10000.0 }
-    }
-
-    private fun findByEndpointName(endpointName: String): GuideMark? {
-        if (!SourceMarker.enabled) {
-            log.warn("SourceMarker is disabled. Cannot find guide mark by endpoint name")
-            return null
-        }
-        return SourceMarker.getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
-            it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
-        }
     }
 }
 
