@@ -2,8 +2,7 @@ package liveplugin.implementation.pluginrunner.kotlin
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import liveplugin.implementation.command.LiveCommandService
-import liveplugin.implementation.indicator.LiveIndicatorService
+import liveplugin.implementation.plugin.LivePluginService
 import spp.jetbrains.monitor.skywalking.SkywalkingMonitorService
 import spp.protocol.service.LiveInstrumentService
 import spp.protocol.service.LiveService
@@ -40,7 +39,6 @@ abstract class LivePluginScript(
     open val liveService: LiveService,
     open val liveViewService: LiveViewService,
     open val liveInstrumentService: LiveInstrumentService? = null,
-    open val liveCommandService: LiveCommandService,
-    open val liveIndicatorService: LiveIndicatorService,
+    open val liveCommandService: LivePluginService,
     open val skywalkingMonitorService: SkywalkingMonitorService
 )

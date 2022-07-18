@@ -340,9 +340,8 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
     }
 
     private boolean mustBeLoadedByPlugin(String name) {
-        return name.startsWith("liveplugin.implementation.command.") ||
-                name.startsWith("liveplugin.implementation.indicator.") ||
-                (name.startsWith("spp.") && !name.startsWith("spp.plugin."));
+        return name.startsWith("liveplugin.implementation.plugin.")
+                || (name.startsWith("spp.") && !name.startsWith("spp.plugin."));
     }
 
     private @NotNull ClassLoader @NotNull[] getAllParents() {

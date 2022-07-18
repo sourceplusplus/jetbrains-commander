@@ -15,20 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package liveplugin.implementation.indicator.impl
+package liveplugin.implementation.plugin.impl
 
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.firstOrNull
 import kotlinx.coroutines.runBlocking
-import liveplugin.implementation.indicator.LiveIndicatorService
+import liveplugin.implementation.plugin.LivePluginService
+import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventListener
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 
-class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
+class LivePluginServiceImpl(val project: Project) : LivePluginService {
 
+    private val commands = mutableSetOf<LiveCommand>()
     private val indicators = mutableMapOf<LiveIndicator, SourceMarkEventListener>()
+
+    override fun registerLiveCommand(command: LiveCommand) {
+        commands.add(command)
+    }
 
     override fun registerLiveIndicator(indicator: LiveIndicator) {
         val eventListener = SourceMarkEventListener {
@@ -46,6 +52,10 @@ class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
         }
     }
 
+    override fun unregisterLiveCommand(commandName: String) {
+        commands.removeIf { it.name == commandName }
+    }
+
     override fun unregisterLiveIndicator(indicator: LiveIndicator) {
         indicators.filter { it.key == indicator }.firstOrNull()?.let {
             SourceMarker.removeGlobalSourceMarkEventListener(it.value)
@@ -55,6 +65,10 @@ class LiveIndicatorServiceImpl(val project: Project) : LiveIndicatorService {
                 indicator.onUnregister()
             }
         }
+    }
+
+    override fun getRegisteredLiveCommands(): List<LiveCommand> {
+        return commands.toList()
     }
 
     override fun getRegisteredLiveIndicators(): List<LiveIndicator> {

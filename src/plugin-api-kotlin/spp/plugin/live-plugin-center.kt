@@ -3,8 +3,7 @@
 package spp.plugin
 
 import com.intellij.openapi.util.IconLoader
-import liveplugin.implementation.command.LiveCommandService
-import liveplugin.implementation.indicator.LiveIndicatorService
+import liveplugin.implementation.plugin.LivePluginService
 import liveplugin.implementation.pluginrunner.kotlin.LivePluginScript
 import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
@@ -15,18 +14,18 @@ import java.io.File
 import javax.swing.Icon
 
 fun LivePluginScript.registerCommand(liveCommand: LiveCommand) {
-    LiveCommandService.getInstance(project).registerLiveCommand(liveCommand)
+    LivePluginService.getInstance(project).registerLiveCommand(liveCommand)
 
     pluginDisposable.whenDisposed {
-        LiveCommandService.getInstance(project).unregisterLiveCommand(liveCommand.name)
+        LivePluginService.getInstance(project).unregisterLiveCommand(liveCommand.name)
     }
 }
 
 fun LivePluginScript.registerIndicator(liveIndicator: LiveIndicator) {
-    LiveIndicatorService.getInstance(project).registerLiveIndicator(liveIndicator)
+    LivePluginService.getInstance(project).registerLiveIndicator(liveIndicator)
 
     pluginDisposable.whenDisposed {
-        LiveIndicatorService.getInstance(project).unregisterLiveIndicator(liveIndicator)
+        LivePluginService.getInstance(project).unregisterLiveIndicator(liveIndicator)
     }
 }
 
