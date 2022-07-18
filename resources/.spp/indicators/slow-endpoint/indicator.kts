@@ -23,6 +23,7 @@ import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.ceil
 
 class SlowEndpointIndicator : LiveIndicator() {
 
@@ -107,13 +108,14 @@ class SlowEndpointIndicator : LiveIndicator() {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
+        val service = skywalkingMonitorService.getCurrentService()
         val slowestEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 "endpoint_resp_time",
-                Optional.presentIfNotNull(skywalkingMonitorService.getCurrentService().name),
+                Optional.presentIfNotNull(service.name),
                 Optional.presentIfNotNull(true),
                 Optional.presentIfNotNull(Scope.Endpoint),
-                3, //todo: relative 10%
+                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
                 Order.DES
             ), duration
         )
