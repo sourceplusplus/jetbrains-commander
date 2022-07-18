@@ -31,8 +31,7 @@ private tailrec fun FilePath.findParentPluginFolder(): FilePath? =
 fun FilePath.isPluginFolder(): Boolean {
     if (!isDirectory && exists()) return false
     val parentPath = parent ?: return false
-    return parentPath == livePluginsPath || (parentPath.value.endsWith("/.spp/commands"))
-            || (parentPath.value.endsWith("/.spp/indicators"))
+    return parentPath == livePluginsPath || (parentPath.value.endsWith("/.spp/plugins"))
 }
 
 object LivePluginPaths {
@@ -44,6 +43,5 @@ object LivePluginPaths {
     // Use scratches location because it's more standard for keeping scripts, e.g. from IDE console.
     val livePluginsCompiledPath = PathManager.getScratchPath().toFilePath() + "live-plugins-compiled"
     @JvmField val livePluginsPath = PathManager.getScratchPath().toFilePath() + "live-plugins"
-    val liveCommandsProjectDirName = ".spp/commands"
-    val liveIndicatorsProjectDirName = ".spp/indicators"
+    val livePluginsProjectDirName = ".spp/plugins"
 }

@@ -29,8 +29,6 @@ interface LiveIndicatorService {
 
     companion object {
         val KEY = Key.create<LiveIndicatorService>("SPP_LIVE_INDICATOR_SERVICE")
-        val LIVE_INDICATOR_LOADER = Key.create<() -> Unit>("SPP_LIVE_INDICATOR_LOADER")
-        val SPP_INDICATORS_LOCATION = Key.create<File>("SPP_INDICATORS_LOCATION")
 
         fun getInstance(project: Project): LiveIndicatorService {
             return project.getUserData(KEY)!!

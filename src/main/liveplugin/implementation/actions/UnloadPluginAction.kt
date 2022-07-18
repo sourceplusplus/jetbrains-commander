@@ -9,7 +9,7 @@ import liveplugin.implementation.common.Icons.unloadPluginIcon
 import liveplugin.implementation.livePlugins
 import liveplugin.implementation.pluginrunner.Binding
 
-class UnloadPluginAction: AnAction("Unload Command", "Unload developer command", unloadPluginIcon), DumbAware {
+class UnloadPluginAction: AnAction("Unload Plugin", "Unload live plugin", unloadPluginIcon), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         unloadPlugins(event.livePlugins())
     }

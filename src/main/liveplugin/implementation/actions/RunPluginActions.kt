@@ -31,26 +31,23 @@ import liveplugin.implementation.pluginrunner.AnError.RunningError
 import liveplugin.implementation.pluginrunner.Binding
 import liveplugin.implementation.pluginrunner.PluginRunner
 import liveplugin.implementation.pluginrunner.canBeHandledBy
-import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyIndicatorRunner
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyPluginRunner
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.testGroovyPluginRunner
-import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinIndicatorRunner
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinPluginRunner
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.testKotlinPluginRunner
 
-private val commandRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
-private val indicatorRunners = listOf(mainGroovyIndicatorRunner, mainKotlinIndicatorRunner)
+private val pluginRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
 private val pluginTestRunners = listOf(testGroovyPluginRunner, testKotlinPluginRunner)
 
-class RunPluginAction: AnAction("Load Command", "Load live command", runPluginIcon), DumbAware {
+class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
-        runCommands(event.livePlugins(), event)
+        runPlugins(event.livePlugins(), event)
     }
 
     override fun update(event: AnActionEvent) {
         val livePlugins = event.livePlugins()
-        event.presentation.isEnabled = livePlugins.canBeHandledBy(commandRunners)
+        event.presentation.isEnabled = livePlugins.canBeHandledBy(pluginRunners)
         if (event.presentation.isEnabled) {
             val hasPluginsToUnload = livePlugins.any { it.canBeUnloaded() }
             val actionName = if (hasPluginsToUnload) "Re-load" else "Load"
@@ -60,12 +57,8 @@ class RunPluginAction: AnAction("Load Command", "Load live command", runPluginIc
     }
 
     companion object {
-        @JvmStatic fun runCommands(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(commandRunners, event) }
-        }
-
-        @JvmStatic fun runIndicators(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(indicatorRunners, event) }
+        @JvmStatic fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
+            livePlugins.forEach { it.runWith(pluginRunners, event) }
         }
 
         @JvmStatic fun runPluginsTests(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
@@ -74,9 +67,9 @@ class RunPluginAction: AnAction("Load Command", "Load live command", runPluginIc
 
         fun pluginNameInActionText(livePlugins: List<LivePlugin>): String {
             val pluginNameInActionText = when (livePlugins.size) {
-                0    -> "Command"
-                1    -> "'${livePlugins.first().id}' Command"
-                else -> "Selected Commands"
+                0    -> "Plugin"
+                1    -> "'${livePlugins.first().id}' Plugin"
+                else -> "Selected Plugins"
             }
             return pluginNameInActionText
         }
@@ -153,7 +146,7 @@ fun Binding.Companion.create(livePlugin: LivePlugin, event: AnActionEvent): Bind
 
     val disposable = object: Disposable {
         override fun dispose() {}
-        override fun toString() = "LiveCommand: $livePlugin"
+        override fun toString() = "LivePlugin: $livePlugin"
     }
     Disposer.register(ApplicationManager.getApplication(), disposable)
 

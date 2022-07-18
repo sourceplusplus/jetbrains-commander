@@ -23,6 +23,7 @@ import spp.jetbrains.marker.source.mark.guide.GuideMark
 
 @Suppress("unused")
 abstract class LiveIndicator {
+    open val listenForAllEvents: Boolean = false
     open val listenForEvents: List<IEventCode> = emptyList()
 
     open suspend fun onRegister() = Unit

@@ -93,19 +93,13 @@ class GroovyPluginRunner(
     private fun File.toUrlString(): String = toURI().toURL().toString()
 
     companion object {
-        const val groovyScriptFile = "command.groovy"
-        const val groovyTestScriptFile = "command.groovy"
+        const val groovyScriptFile = "plugin.groovy"
+        const val groovyTestScriptFile = "plugin.groovy"
         const val groovyAddToClasspathKeyword = "// add-to-classpath "
         const val groovyDependsOnPluginKeyword = "// depends-on-plugin "
 
         val mainGroovyPluginRunner = GroovyPluginRunner(groovyScriptFile)
         val testGroovyPluginRunner = GroovyPluginRunner(groovyTestScriptFile)
-
-        const val groovyIndicatorScriptFile = "indicator.groovy"
-        const val groovyIndicatorTestScriptFile = "indicator.groovy"
-
-        val mainGroovyIndicatorRunner = GroovyPluginRunner(groovyIndicatorScriptFile)
-        val testGroovyIndicatorRunner = GroovyPluginRunner(groovyIndicatorTestScriptFile)
     }
 }
 

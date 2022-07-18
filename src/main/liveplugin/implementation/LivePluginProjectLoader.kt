@@ -41,37 +41,32 @@ object LivePluginProjectLoader {
         val sppResourcesLocation = extractSppResources()
 
         project.putUserData(LiveIndicatorService.KEY, LiveIndicatorServiceImpl(project))
-        project.putUserData(LiveIndicatorService.LIVE_INDICATOR_LOADER) {
-            val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
-            val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
-            val sppIndicatorsLocation = File(sppResourcesLocation, "indicators")
-            RunPluginAction.runIndicators(sppIndicatorsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
-            project.putUserData(LiveIndicatorService.SPP_INDICATORS_LOCATION, sppIndicatorsLocation)
-
-            val projectPath = project.basePath?.toFilePath() ?: return@putUserData
-            val liveIndicatorsPath = projectPath + LivePluginPaths.liveIndicatorsProjectDirName
-            RunPluginAction.runIndicators(liveIndicatorsPath.listFiles().toLivePlugins(), dummyEvent)
-        }
+//        project.putUserData(LiveIndicatorService.LIVE_INDICATOR_LOADER) {
+//            val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
+//            val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
+//            val sppIndicatorsLocation = File(sppResourcesLocation, "indicators")
+//            RunPluginAction.runPlugins(sppIndicatorsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
+//            project.putUserData(LiveIndicatorService.SPP_INDICATORS_LOCATION, sppIndicatorsLocation)
+//
+////            val projectPath = project.basePath?.toFilePath() ?: return@putUserData
+////            val liveIndicatorsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
+////            RunPluginAction.runPlugins(liveIndicatorsPath.listFiles().toLivePlugins(), dummyEvent)
+//        }
         project.putUserData(LiveCommandService.KEY, LiveCommandServiceImpl(project))
         project.putUserData(LiveCommandService.LIVE_COMMAND_LOADER) {
             val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
             val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
-            val sppCommandsLocation = File(sppResourcesLocation, "commands")
-            RunPluginAction.runCommands(sppCommandsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
+            val sppCommandsLocation = File(sppResourcesLocation, "plugins")
+            RunPluginAction.runPlugins(sppCommandsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
             project.putUserData(LiveCommandService.SPP_COMMANDS_LOCATION, sppCommandsLocation)
 
             val projectPath = project.basePath?.toFilePath() ?: return@putUserData
-            val liveCommandsPath = projectPath + LivePluginPaths.liveCommandsProjectDirName
-            RunPluginAction.runCommands(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+            val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
+            RunPluginAction.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
         }
     }
 
     fun projectClosing(project: Project) {
-        project.getUserData(LiveIndicatorService.SPP_INDICATORS_LOCATION)?.let {
-            UnloadPluginAction.unloadPlugins(it.toFilePath().listFiles().toLivePlugins())
-            it.deleteRecursively()
-        }
-        project.putUserData(LiveIndicatorService.SPP_INDICATORS_LOCATION, null)
         project.getUserData(LiveCommandService.SPP_COMMANDS_LOCATION)?.let {
             UnloadPluginAction.unloadPlugins(it.toFilePath().listFiles().toLivePlugins())
             it.deleteRecursively()
@@ -79,16 +74,11 @@ object LivePluginProjectLoader {
         project.putUserData(LiveCommandService.SPP_COMMANDS_LOCATION, null)
         project.putUserData(LiveCommandService.LIVE_COMMAND_LOADER, null)
         project.putUserData(LiveCommandService.KEY, null)
-        project.putUserData(LiveIndicatorService.LIVE_INDICATOR_LOADER, null)
         project.putUserData(LiveIndicatorService.KEY, null)
 
         val projectPath = project.basePath?.toFilePath() ?: return
-        val liveCommandsPath = projectPath + LivePluginPaths.liveCommandsProjectDirName
-        val liveIndicatorsPath = projectPath + LivePluginPaths.liveIndicatorsProjectDirName
-
-        UnloadPluginAction.unloadPlugins(
-            liveCommandsPath.listFiles().toLivePlugins() + liveIndicatorsPath.listFiles().toLivePlugins()
-        )
+        val livePluginsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
+        UnloadPluginAction.unloadPlugins(livePluginsPath.listFiles().toLivePlugins())
     }
 
     private fun extractSppResources(): File {

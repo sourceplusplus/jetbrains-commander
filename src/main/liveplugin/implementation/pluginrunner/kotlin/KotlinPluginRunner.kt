@@ -106,19 +106,13 @@ class KotlinPluginRunner(
     }
 
     companion object {
-        const val kotlinScriptFile = "command.kts"
-        const val kotlinTestScriptFile = "command-test.kts"
+        const val kotlinScriptFile = "plugin.kts"
+        const val kotlinTestScriptFile = "plugin-test.kts"
         const val kotlinAddToClasspathKeyword = "// add-to-classpath "
         const val kotlinDependsOnPluginKeyword = "// depends-on-plugin "
 
-        val mainKotlinPluginRunner = KotlinPluginRunner(kotlinScriptFile, "Command")
-        val testKotlinPluginRunner = KotlinPluginRunner(kotlinTestScriptFile, "Command")
-
-        const val kotlinIndicatorScriptFile = "indicator.kts"
-        const val kotlinIndicatorTestScriptFile = "indicator-test.kts"
-
-        val mainKotlinIndicatorRunner = KotlinPluginRunner(kotlinIndicatorScriptFile, "Indicator")
-        val testKotlinIndicatorRunner = KotlinPluginRunner(kotlinIndicatorTestScriptFile, "Indicator")
+        val mainKotlinPluginRunner = KotlinPluginRunner(kotlinScriptFile, "Plugin")
+        val testKotlinPluginRunner = KotlinPluginRunner(kotlinTestScriptFile, "Plugin")
     }
 }
 
