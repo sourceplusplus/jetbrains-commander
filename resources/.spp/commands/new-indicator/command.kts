@@ -42,12 +42,12 @@ class NewIndicatorCommand : LiveCommand() {
         return """
             import spp.indicator.*
             import spp.plugin.*
+            import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
             import spp.jetbrains.marker.source.mark.guide.GuideMark
 
             class ${properIndicatorName}Indicator : LiveIndicator() {
-                override val name = "$indicatorName"
 
-                override fun trigger(guideMark: GuideMark) {
+                override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
                     show("Hello world")
                 }
             }
