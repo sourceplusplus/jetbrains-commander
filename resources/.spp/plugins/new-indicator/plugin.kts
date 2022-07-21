@@ -28,10 +28,10 @@ class NewIndicatorCommand : LiveCommand() {
             val indicatorName = context.args.joinToString(" ")
             val indicatorDir = indicatorName.replace(" ", "-")
             val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
-                    "indicator.kts", IdeUtil.kotlinFileType, getNewCommandScript(indicatorName)
+                    "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(indicatorName)
             )
             val baseDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(project.baseDir)
-            val psiDirectory = DirectoryUtil.createSubdirectories(".spp/indicators/$indicatorDir", baseDirectory, "/")
+            val psiDirectory = DirectoryUtil.createSubdirectories(".spp/plugins/$indicatorDir", baseDirectory, "/")
 
             PsiNavigateUtil.navigate(psiDirectory.add(psiFile))
         }

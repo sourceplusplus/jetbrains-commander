@@ -28,10 +28,10 @@ class NewCommandCommand : LiveCommand() {
             val commandName = context.args.joinToString(" ")
             val commandDir = commandName.replace(" ", "-")
             val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
-                    "command.kts", IdeUtil.kotlinFileType, getNewCommandScript(commandName)
+                    "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(commandName)
             )
             val baseDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(project.baseDir)
-            val psiDirectory = DirectoryUtil.createSubdirectories(".spp/commands/$commandDir", baseDirectory, "/")
+            val psiDirectory = DirectoryUtil.createSubdirectories(".spp/plugins/$commandDir", baseDirectory, "/")
 
             PsiNavigateUtil.navigate(psiDirectory.add(psiFile))
         }
