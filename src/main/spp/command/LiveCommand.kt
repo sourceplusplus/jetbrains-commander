@@ -19,6 +19,7 @@ package spp.command
 
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.runBlocking
+import javax.swing.Icon
 
 @Suppress("unused")
 abstract class LiveCommand {
@@ -26,8 +27,8 @@ abstract class LiveCommand {
     abstract val description: String
     open val params: List<String> = emptyList()
     open val aliases: Set<String> = emptySet()
-    open val selectedIcon: String? = null
-    open val unselectedIcon: String? = null
+    open var selectedIcon: Icon? = null
+    open var unselectedIcon: Icon? = null
 
     open fun trigger(context: LiveCommandContext) {
         ApplicationManager.getApplication().runReadAction {

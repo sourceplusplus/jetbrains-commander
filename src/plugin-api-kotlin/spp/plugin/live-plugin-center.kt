@@ -14,8 +14,15 @@ import java.io.File
 import javax.swing.Icon
 
 fun LivePluginScript.registerCommand(liveCommand: LiveCommand) {
-    LivePluginService.getInstance(project).registerLiveCommand(liveCommand)
+    //set default icons (if not set)
+    if (liveCommand.selectedIcon == null) {
+        liveCommand.selectedIcon = findIcon("icons/selected.svg")
+    }
+    if (liveCommand.unselectedIcon == null) {
+        liveCommand.unselectedIcon = findIcon("icons/unselected.svg")
+    }
 
+    LivePluginService.getInstance(project).registerLiveCommand(liveCommand)
     pluginDisposable.whenDisposed {
         LivePluginService.getInstance(project).unregisterLiveCommand(liveCommand.name)
     }
@@ -23,7 +30,6 @@ fun LivePluginScript.registerCommand(liveCommand: LiveCommand) {
 
 fun LivePluginScript.registerIndicator(liveIndicator: LiveIndicator) {
     LivePluginService.getInstance(project).registerLiveIndicator(liveIndicator)
-
     pluginDisposable.whenDisposed {
         LivePluginService.getInstance(project).unregisterLiveIndicator(liveIndicator)
     }

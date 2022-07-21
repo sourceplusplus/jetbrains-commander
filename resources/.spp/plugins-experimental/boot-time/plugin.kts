@@ -16,8 +16,8 @@ class BootTimeCommand : LiveCommand() {
     override val name = "boot-time"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Gets the earliest boot time for the current service" + "</span></html>"
-    override val selectedIcon = "boot-time/icons/boot-time_selected.svg"
-    override val unselectedIcon = "boot-time/icons/boot-time_unselected.svg"
+    override val selectedIcon = findIcon("icons/boot-time_selected.svg")
+    override val unselectedIcon = findIcon("icons/boot-time_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val serverTimezone = skywalkingMonitorService.getTimeInfo().result?.timezone

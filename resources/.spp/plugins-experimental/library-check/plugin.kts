@@ -10,8 +10,8 @@ class LibraryCheckCommand : LiveCommand() {
     override val params: List<String> = listOf("Library Name") //todo: optional params
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Find all jar libraries used in the currently active services" + "</span></html>"
-    override val selectedIcon: String = "library-check/icons/library-check_selected.svg"
-    override val unselectedIcon: String = "library-check/icons/library-check_unselected.svg"
+    override val selectedIcon: String = findIcon("icons/library-check_selected.svg")
+    override val unselectedIcon: String = findIcon("icons/library-check_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val librarySearch = (context.args.firstOrNull() ?: "").lowercase()

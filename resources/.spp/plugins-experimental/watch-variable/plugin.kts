@@ -27,8 +27,8 @@ class WatchVariableCommand : LiveCommand() {
     override val name = "watch-variable"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Adds live breakpoint to display the variable's current value" + "</span></html>"
-    override val selectedIcon: String = "watch-variable/icons/watch-variable_selected.svg"
-    override val unselectedIcon: String = "watch-variable/icons/watch-variable_unselected.svg"
+    override val selectedIcon: String = findIcon("icons/watch-variable_selected.svg")
+    override val unselectedIcon: String = findIcon("icons/watch-variable_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val variableName = context.variableName

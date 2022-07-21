@@ -11,8 +11,8 @@ class AddSpanCommand : LiveCommand() {
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
             ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("on_method") +
             " *methodName*</span></html>"
-    override val selectedIcon = "add-span/icons/live-span_selected.svg"
-    override val unselectedIcon = "add-span/icons/live-span_unselected.svg"
+    override var selectedIcon = findIcon("icons/live-span_selected.svg")
+    override var unselectedIcon = findIcon("icons/live-span_unselected.svg")
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {

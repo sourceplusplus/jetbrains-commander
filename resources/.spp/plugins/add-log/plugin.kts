@@ -11,8 +11,8 @@ class AddLogCommand : LiveCommand() {
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
             ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("on_line") +
             " *lineNumber*</span></html>"
-    override val selectedIcon = "add-log/icons/live-log_selected.svg"
-    override val unselectedIcon = "add-log/icons/live-log_unselected.svg"
+    override var selectedIcon = findIcon("icons/live-log_selected.svg")
+    override var unselectedIcon = findIcon("icons/live-log_unselected.svg")
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {
