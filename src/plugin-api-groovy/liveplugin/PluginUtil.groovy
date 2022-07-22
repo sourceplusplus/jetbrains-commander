@@ -146,11 +146,13 @@ class PluginUtil {
 	 * @param consoleTitle (optional)
 	 * @param project console will be displayed in the window of this project
 	 * @param contentType (optional) see https://github.com/JetBrains/intellij-community/blob/master/platform/platform-api/src/com/intellij/execution/ui/ConsoleViewContentType.java
+	 * @param scrollTo (optional) if set, the console will be scrolled to the specified offset
 	 */
 	@CanCallFromAnyThread
 	static ConsoleView showInConsole(@Nullable message, String consoleTitle = "", @NotNull Project project,
-	                                 ConsoleViewContentType contentType = Console.guessContentTypeOf(message)) {
-		Console.showInConsole(message, consoleTitle, project, contentType)
+	                                 ConsoleViewContentType contentType = Console.guessContentTypeOf(message),
+									 int scrollTo = -1) {
+		Console.showInConsole(message, consoleTitle, project, contentType, scrollTo)
 	}
 
 	/**

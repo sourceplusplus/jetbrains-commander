@@ -60,8 +60,13 @@ class Console {
 		}
 	}
 
-	static ConsoleView showInConsole(@Nullable message, String consoleTitle = "", @NotNull Project project,
-	                                 ConsoleViewContentType contentType = guessContentTypeOf(message)) {
+	static ConsoleView showInConsole(
+        @Nullable message,
+		String consoleTitle = "",
+		@NotNull Project project,
+		ConsoleViewContentType contentType = guessContentTypeOf(message),
+        int scrollTo = -1
+	) {
 		AtomicReference<ConsoleView> result = new AtomicReference(null)
 		// Use reference for consoleTitle because get groovy Reference class like in this bug http://jira.codehaus.org/browse/GROOVY-5101
 		AtomicReference<String> titleRef = new AtomicReference(consoleTitle)
@@ -84,7 +89,8 @@ class Console {
 
 			RunContentManager.getInstance(project).showRunContent(executor, descriptor)
 			result.set(console)
-		}
+            if (scrollTo >= 0) console.scrollTo(scrollTo)
+        }
 		result.get()
 	}
 

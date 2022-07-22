@@ -53,9 +53,10 @@ fun show(
 fun Project.showInConsole(
     message: Any?,
     consoleTitle: String = "",
-    contentType: ConsoleViewContentType = Console.guessContentTypeOf(message)
+    contentType: ConsoleViewContentType = Console.guessContentTypeOf(message),
+    scrollTo: Int = -1
 ): ConsoleView =
-    Console.showInConsole(message, consoleTitle, this, contentType)
+    Console.showInConsole(message, consoleTitle, this, contentType, scrollTo)
 
 fun Document.executeCommand(project: Project, description: String? = null, callback: Document.() -> Unit) {
     runOnEdtWithWriteLock {
