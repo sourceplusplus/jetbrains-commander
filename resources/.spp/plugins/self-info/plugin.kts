@@ -21,21 +21,21 @@ class SelfInfoCommand : LiveCommand() {
             formattedSelfInfo.append("Developer:").append(" ").append(it.developer.id).appendLine()
             if (it.roles.isNotEmpty()) {
                 formattedSelfInfo.append("Roles:")
-                it.roles.forEach {
+                it.roles.sortedBy { it.roleName }.forEach {
                     formattedSelfInfo.appendLine().append(" - ").append(it.roleName)
                 }
             }
 
             if (it.permissions.isNotEmpty()) {
                 formattedSelfInfo.appendLine().append("Permissions:")
-                it.permissions.forEach {
+                it.permissions.sortedBy { it.name }.forEach {
                     formattedSelfInfo.appendLine().append(" - ").append(it.name)
                 }
             }
 
             if (it.access.isNotEmpty()) {
                 formattedSelfInfo.appendLine().append("Access:")
-                it.access.forEach {
+                it.access.sortedBy { it.id }.forEach {
                     formattedSelfInfo.appendLine().append(" - ").append(it)
                 }
             }
