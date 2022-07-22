@@ -1,5 +1,6 @@
 import com.intellij.notification.NotificationType
 import liveplugin.PluginUtil.showInConsole
+import liveplugin.implementation.Console
 import spp.command.LiveCommand
 import spp.command.LiveCommandContext
 import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
@@ -14,7 +15,7 @@ class PlatformStatsCommand : LiveCommand() {
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Displays Source++ platform stats" + "</span></html>"
 
-    override suspend fun triggerSuspend(context: LiveCommandContext) {
+    override fun trigger(context: LiveCommandContext) {
         liveService.getStats().onSuccess {
             val formattedStats = StringBuilder()
             formattedStats.append("Connected markers: ")
@@ -36,7 +37,13 @@ class PlatformStatsCommand : LiveCommand() {
             }
 
             val localTime = LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
-            showInConsole(formattedStats, "Platform Stats - $localTime", project)
+            showInConsole(
+                formattedStats,
+                "Platform Stats - $localTime",
+                project,
+                Console.guessContentTypeOf(formattedStats),
+                0
+            )
         }.onFailure {
             show(it.message, "Error", NotificationType.ERROR)
         }
