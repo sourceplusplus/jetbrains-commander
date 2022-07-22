@@ -105,6 +105,7 @@ class FailingEndpointIndicator : LiveIndicator() {
     }
 
     private suspend fun getTopFailingEndpoints(): List<JsonObject> {
+        if (log.isTraceEnabled) log.trace("Getting top failing endpoints")
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
