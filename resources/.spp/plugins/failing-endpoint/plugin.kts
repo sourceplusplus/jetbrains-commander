@@ -14,6 +14,7 @@ import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
+import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
@@ -101,6 +102,11 @@ class FailingEndpointIndicator : LiveIndicator() {
                     gutterMark.configuration.icon = findIcon("icons/failing-endpoint.svg")
                     gutterMark.apply(true)
                     failingIndicators[guideMark] = gutterMark
+                    gutterMark.addEventListener {
+                        if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
+                            gutterMark.triggerEvent(INDICATOR_STOPPED, listOf())
+                        }
+                    }
                 }
             }
             INDICATOR_STOPPED -> {
