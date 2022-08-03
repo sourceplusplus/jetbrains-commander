@@ -47,6 +47,7 @@ class QuickStatsIndicator : LiveIndicator() {
     }
 
     private suspend fun displayQuickStatsInlay(sourceMark: SourceMark) {
+        log.info("Displaying quick stats inlay on artifact: {}", sourceMark.artifactQualifiedName.identifier)
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = if (swVersion.startsWith("9")) {
             listOf("endpoint_cpm", "endpoint_resp_time", "endpoint_sla")

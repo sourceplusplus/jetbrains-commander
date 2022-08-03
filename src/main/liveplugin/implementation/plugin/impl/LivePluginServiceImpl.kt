@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.firstOrNull
 import kotlinx.coroutines.runBlocking
 import liveplugin.implementation.plugin.LivePluginService
+import org.slf4j.LoggerFactory
 import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
@@ -28,6 +29,10 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventListener
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 
 class LivePluginServiceImpl(val project: Project) : LivePluginService {
+
+    companion object {
+        private val log = LoggerFactory.getLogger(LivePluginServiceImpl::class.java)
+    }
 
     private val commands = mutableSetOf<LiveCommand>()
     private val indicators = mutableMapOf<LiveIndicator, SourceMarkEventListener>()
@@ -50,6 +55,7 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
         runBlocking {
             indicator.onRegister()
         }
+        log.debug("Registered indicator: {} - Current indicators: {}", indicator, indicators.size)
     }
 
     override fun unregisterLiveCommand(commandName: String) {
@@ -64,6 +70,7 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
             runBlocking {
                 indicator.onUnregister()
             }
+            log.debug("Unregistered indicator: {} - Current indicators: {}", indicator, indicators.size)
         }
     }
 

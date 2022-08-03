@@ -76,7 +76,7 @@ class SlowEndpointIndicator : LiveIndicator() {
         //trigger removes
         slowEndpoints.toMap().forEach {
             if (!currentSlowest.map { it.getString("name") }.contains(it.key)) {
-                log.debug("Endpoint $it is no longer slow")
+                log.debug("Endpoint ${it.key} is no longer slow")
                 slowEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
             }
         }
