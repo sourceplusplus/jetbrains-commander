@@ -126,7 +126,7 @@ class SlowEndpointIndicator : LiveIndicator() {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
-        val service = skywalkingMonitorService.getCurrentService()
+        val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val slowestEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 "endpoint_resp_time",

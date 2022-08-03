@@ -44,14 +44,14 @@ class EndpointLoadIndicator : LiveIndicator() {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(15)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
-        val serviceId = skywalkingMonitorService.getCurrentService().name
+        val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 "endpoint_cpm",
-                Optional.presentIfNotNull(serviceId),
+                Optional.presentIfNotNull(service.name),
                 Optional.presentIfNotNull(true),
                 Optional.presentIfNotNull(Scope.Endpoint),
-                (skywalkingMonitorService.getEndpoints(serviceId, 1000).size() * 0.20).toInt(), //relative top 20%
+                (skywalkingMonitorService.getEndpoints(service.name, 1000).size() * 0.20).toInt(), //relative top 20%
                 Order.DES
             ), duration
         )
