@@ -36,13 +36,24 @@ class FailingEndpointIndicator : LiveIndicator() {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val failingEndpoints = mutableMapOf<String, GuideMark>()
     private val failingIndicators = mutableMapOf<GuideMark, GutterMark>()
+    private var periodicTimerId = -1L
 
     override suspend fun onRegister() {
-        vertx.setPeriodic(5000) {
+        log.info("FailingEndpointIndicator registered")
+        vertx.setPeriodic(5000) { timerId ->
+            periodicTimerId = timerId
             GlobalScope.launch(vertx.dispatcher()) {
                 refreshIndicators()
             }
         }
+    }
+
+    //todo: won't need with multi-project SourceMarkerPlugin support (live-platform/#475)
+    override suspend fun onUnregister() {
+        log.info("FailingEndpointIndicator unregistered")
+        vertx.cancelTimer(periodicTimerId)
+        failingEndpoints.clear()
+        failingIndicators.clear()
     }
 
     private suspend fun refreshIndicators() {
