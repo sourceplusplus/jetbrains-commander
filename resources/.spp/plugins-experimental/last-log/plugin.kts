@@ -1,4 +1,5 @@
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -26,7 +27,7 @@ import java.awt.Color
 
 class LastLogIndicator : LiveIndicator() {
     companion object {
-        private val log = org.slf4j.LoggerFactory.getLogger("spp.indicator.LastLogIndicator")
+        private val log = logger<LastLogIndicator>()
         private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
     }
 

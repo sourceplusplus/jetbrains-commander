@@ -1,5 +1,6 @@
 import com.apollographql.apollo3.api.Optional
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.logger
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
@@ -7,7 +8,6 @@ import kotlinx.coroutines.launch
 import monitor.skywalking.protocol.type.Order
 import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
-import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -28,7 +28,7 @@ import kotlin.math.ceil
 class SlowEndpointIndicator : LiveIndicator() {
 
     companion object {
-        private val log = LoggerFactory.getLogger("spp.indicator.SlowEndpointIndicator")
+        private val log = logger<SlowEndpointIndicator>()
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
     }

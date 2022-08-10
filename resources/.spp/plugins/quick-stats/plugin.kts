@@ -1,10 +1,10 @@
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import org.slf4j.LoggerFactory
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -36,7 +36,7 @@ import java.time.temporal.ChronoUnit
 
 class QuickStatsIndicator : LiveIndicator() {
 
-    private val log = LoggerFactory.getLogger("spp.indicator.QuickStatsIndicator")
+    private val log = logger<QuickStatsIndicator>()
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
     private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
 
@@ -46,7 +46,7 @@ class QuickStatsIndicator : LiveIndicator() {
     }
 
     private suspend fun displayQuickStatsInlay(sourceMark: SourceMark) {
-        log.info("Displaying quick stats inlay on artifact: {}", sourceMark.artifactQualifiedName.identifier)
+        log.info("Displaying quick stats inlay on artifact: ${sourceMark.artifactQualifiedName.identifier}")
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = if (swVersion.startsWith("9")) {
             listOf("endpoint_cpm", "endpoint_resp_time", "endpoint_sla")
