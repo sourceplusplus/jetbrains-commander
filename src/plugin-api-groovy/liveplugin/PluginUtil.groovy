@@ -273,8 +273,8 @@ class PluginUtil {
 		Actions.runLivePlugin(pluginId, project)
 	}
 
-	static unloadLivePlugin(@NotNull String pluginId) {
-		Actions.unloadLivePlugin(pluginId)
+	static unloadLivePlugin(@NotNull String pluginId, @NotNull Project project = currentProjectInFrame()) {
+		Actions.unloadLivePlugin(pluginId, project)
 	}
 
 	static testLivePlugin(@NotNull String pluginId, @NotNull Project project = currentProjectInFrame()) {

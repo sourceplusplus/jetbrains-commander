@@ -11,6 +11,8 @@ import liveplugin.implementation.common.toFilePath
 data class LivePlugin(val path: FilePath) {
     val id: String = path.toFile().name
 
+    fun idByProject(project: Project?): String = "$id-${project?.projectFilePath}"
+
     companion object {
         @JvmStatic fun livePluginsById(): Map<String, LivePlugin> =
             livePluginsPath.listFiles { file -> file.isDirectory && file.name != Project.DIRECTORY_STORE_FOLDER }

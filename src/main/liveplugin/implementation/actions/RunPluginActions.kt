@@ -49,7 +49,7 @@ class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon
         val livePlugins = event.livePlugins()
         event.presentation.isEnabled = livePlugins.canBeHandledBy(pluginRunners)
         if (event.presentation.isEnabled) {
-            val hasPluginsToUnload = livePlugins.any { it.canBeUnloaded() }
+            val hasPluginsToUnload = livePlugins.any { it.canBeUnloaded(event.project) }
             val actionName = if (hasPluginsToUnload) "Re-load" else "Load"
             event.presentation.setText("$actionName ${pluginNameInActionText(livePlugins)}", false)
             event.presentation.icon = if (hasPluginsToUnload) rerunPluginIcon else runPluginIcon
@@ -131,11 +131,11 @@ private fun runInBackground(project: Project?, taskDescription: String, function
 
 private val bindingByPluginId = HashMap<String, Binding>()
 
-fun Binding.Companion.lookup(livePlugin: LivePlugin): Binding? =
-    bindingByPluginId[livePlugin.id]
+fun Binding.Companion.lookup(livePlugin: LivePlugin, project: Project?): Binding? =
+    bindingByPluginId[livePlugin.idByProject(project)]
 
 fun Binding.Companion.create(livePlugin: LivePlugin, event: AnActionEvent): Binding {
-    val oldBinding = bindingByPluginId[livePlugin.id]
+    val oldBinding = bindingByPluginId[livePlugin.idByProject(event.project)]
     if (oldBinding != null) {
         try {
             Disposer.dispose(oldBinding.pluginDisposable)
@@ -151,14 +151,14 @@ fun Binding.Companion.create(livePlugin: LivePlugin, event: AnActionEvent): Bind
     Disposer.register(ApplicationManager.getApplication(), disposable)
 
     val binding = Binding(event.project, event.place == ideStartupActionPlace, livePlugin.path.value, disposable)
-    bindingByPluginId[livePlugin.id] = binding
+    bindingByPluginId[livePlugin.idByProject(event.project)] = binding
 
     return binding
 }
 
-fun Binding.dispose() {
+fun Binding.dispose(project: Project?) {
     Disposer.dispose(pluginDisposable)
-    bindingByPluginId.remove(LivePlugin(pluginPath.toFilePath()).id)
+    bindingByPluginId.remove(LivePlugin(pluginPath.toFilePath()).idByProject(project))
 }
 
 private fun displayError(pluginId: String, error: AnError, project: Project?) {

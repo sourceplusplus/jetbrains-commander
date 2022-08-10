@@ -57,23 +57,16 @@ object LivePluginProjectLoader {
 
     fun projectClosing(project: Project) {
         project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION)?.let {
-            UnloadPluginAction.unloadPlugins(it.toFilePath().listFiles().toLivePlugins())
+            UnloadPluginAction.unloadPlugins(project, it.toFilePath().listFiles().toLivePlugins())
         }
 
         val projectPath = project.basePath?.toFilePath()
         if (projectPath != null) {
             val livePluginsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
-            UnloadPluginAction.unloadPlugins(livePluginsPath.listFiles().toLivePlugins())
+            UnloadPluginAction.unloadPlugins(project, livePluginsPath.listFiles().toLivePlugins())
         }
 
-        project.getUserData(LivePluginService.KEY)?.let { liveService ->
-            liveService.getRegisteredLiveCommands().forEach {
-                liveService.unregisterLiveCommand(it.name)
-            }
-            liveService.getRegisteredLiveIndicators().forEach {
-                liveService.unregisterLiveIndicator(it)
-            }
-        }
+        project.getUserData(LivePluginService.KEY)?.reset()
     }
 
     private fun extractSppResources(): File {

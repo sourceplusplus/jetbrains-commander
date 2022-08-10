@@ -37,6 +37,17 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
     private val commands = mutableSetOf<LiveCommand>()
     private val indicators = mutableMapOf<LiveIndicator, SourceMarkEventListener>()
 
+    override fun reset() {
+        project.getUserData(LivePluginService.KEY)?.let { liveService ->
+            liveService.getRegisteredLiveCommands().forEach {
+                liveService.unregisterLiveCommand(it.name)
+            }
+            liveService.getRegisteredLiveIndicators().forEach {
+                liveService.unregisterLiveIndicator(it)
+            }
+        }
+    }
+
     override fun registerLiveCommand(command: LiveCommand) {
         commands.add(command)
     }

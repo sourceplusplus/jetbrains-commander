@@ -24,6 +24,7 @@ import spp.indicator.LiveIndicator
 import java.io.File
 
 interface LivePluginService {
+    fun reset()
     fun registerLiveCommand(command: LiveCommand)
     fun unregisterLiveCommand(commandName: String)
     fun getRegisteredLiveCommands(): List<LiveCommand>

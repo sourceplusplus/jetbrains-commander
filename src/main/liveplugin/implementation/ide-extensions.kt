@@ -12,6 +12,8 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
 import com.intellij.openapi.fileTypes.SyntaxHighlighterProvider
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NotNullLazyKey
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -52,13 +54,21 @@ class ScratchLivePluginRootType : RootType("LivePlugin", "Live Plugins") {
 
 class LivePluginDeletedListener : BulkFileListener {
     override fun before(events: List<VFileEvent>) {
-        val livePlugins = events.filter { it is VFileDeleteEvent && it.file.toFilePath().isPluginFolder() }
-            .mapNotNull { event -> event.file?.toFilePath() }
-            .toLivePlugins()
+        events.filter { it is VFileDeleteEvent && it.file.toFilePath().isPluginFolder() }
+            .filter { event -> event.file?.toFilePath() != null }
+            .forEach {
+                handleLivePluginDeleted(it)
+            }
+    }
 
+    private fun handleLivePluginDeleted(event: VFileEvent) {
+        val livePlugins = listOf(event).map { event.file!!.toFilePath() }.toLivePlugins()
+        val project = ProjectManager.getInstance().openProjects.find {
+            ProjectRootManager.getInstance(it).fileIndex.isInContent(event.file!!)
+        }
         if (livePlugins.isNotEmpty()) {
             runLaterOnEdt {
-                UnloadPluginAction.unloadPlugins(livePlugins)
+                UnloadPluginAction.unloadPlugins(project, livePlugins)
                 livePlugins.forEach { plugin ->
                     (livePluginsCompiledPath + plugin.id).toVirtualFile()?.delete()
                 }
