@@ -20,7 +20,6 @@ import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
-import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit

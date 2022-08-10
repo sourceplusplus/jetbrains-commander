@@ -49,7 +49,7 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
                 }
             }
         }
-        SourceMarker.addGlobalSourceMarkEventListener(eventListener)
+        SourceMarker.getInstance(project).addGlobalSourceMarkEventListener(eventListener)
         indicators[indicator] = eventListener
 
         runBlocking {
@@ -64,7 +64,7 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
 
     override fun unregisterLiveIndicator(indicator: LiveIndicator) {
         indicators.filter { it.key == indicator }.firstOrNull()?.let {
-            SourceMarker.removeGlobalSourceMarkEventListener(it.value)
+            SourceMarker.getInstance(project).removeGlobalSourceMarkEventListener(it.value)
             indicators.remove(it.key)
 
             runBlocking {

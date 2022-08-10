@@ -3,6 +3,7 @@
 package spp.plugin
 
 import com.intellij.openapi.util.IconLoader
+import io.vertx.core.Vertx
 import liveplugin.implementation.plugin.LivePluginService
 import liveplugin.implementation.pluginrunner.kotlin.LivePluginScript
 import spp.command.LiveCommand
@@ -45,8 +46,11 @@ fun LivePluginScript.findIcon(path: String): Icon? {
 }
 
 fun LivePluginScript.findByEndpointName(endpointName: String): GuideMark? {
-    if (!SourceMarker.enabled) return null
-    return SourceMarker.getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
+    if (!SourceMarker.getInstance(project).enabled) return null
+    return SourceMarker.getInstance(project).getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
         it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
     }
 }
+
+val LivePluginScript.vertx: Vertx
+    get() = project.getUserData(SourceMarker.VERTX_KEY)!!

@@ -19,7 +19,6 @@ import spp.jetbrains.monitor.skywalking.SkywalkingClient
 import spp.jetbrains.monitor.skywalking.model.GetEndpointMetrics
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.jetbrains.monitor.skywalking.toProtocol
-import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.*
 import spp.protocol.SourceServices
 import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
