@@ -10,11 +10,11 @@ import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
 import liveplugin.implementation.actions.RunPluginAction
 import liveplugin.implementation.actions.UnloadPluginAction
-import liveplugin.implementation.plugin.LivePluginService
-import liveplugin.implementation.plugin.impl.LivePluginServiceImpl
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.livePluginNotificationGroup
 import liveplugin.implementation.common.toFilePath
+import liveplugin.implementation.plugin.LivePluginService
+import liveplugin.implementation.plugin.impl.LivePluginServiceImpl
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -35,15 +35,19 @@ object LivePluginProjectLoader {
             return
         }
         if (project.getUserData(LivePluginService.KEY) != null) return
-        val sppResourcesLocation = extractSppResources()
+        val sppPluginsLocation = if (project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION) == null) {
+            val sppPluginsLocation = File(extractSppResources(), "plugins")
+            project.putUserData(LivePluginService.SPP_PLUGINS_LOCATION, sppPluginsLocation)
+            sppPluginsLocation
+        } else {
+            project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION)!!
+        }
 
         project.putUserData(LivePluginService.KEY, LivePluginServiceImpl(project))
         project.putUserData(LivePluginService.LIVE_PLUGIN_LOADER) {
             val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
             val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
-            val sppCommandsLocation = File(sppResourcesLocation, "plugins")
-            RunPluginAction.runPlugins(sppCommandsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
-            project.putUserData(LivePluginService.SPP_PLUGINS_LOCATION, sppCommandsLocation)
+            RunPluginAction.runPlugins(sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
 
             val projectPath = project.basePath?.toFilePath() ?: return@putUserData
             val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
@@ -54,7 +58,6 @@ object LivePluginProjectLoader {
     fun projectClosing(project: Project) {
         project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION)?.let {
             UnloadPluginAction.unloadPlugins(it.toFilePath().listFiles().toLivePlugins())
-            it.deleteRecursively()
         }
 
         val projectPath = project.basePath?.toFilePath()
@@ -63,9 +66,14 @@ object LivePluginProjectLoader {
             UnloadPluginAction.unloadPlugins(livePluginsPath.listFiles().toLivePlugins())
         }
 
-        project.putUserData(LivePluginService.SPP_PLUGINS_LOCATION, null)
-        project.putUserData(LivePluginService.LIVE_PLUGIN_LOADER, null)
-        project.putUserData(LivePluginService.KEY, null)
+        project.getUserData(LivePluginService.KEY)?.let { liveService ->
+            liveService.getRegisteredLiveCommands().forEach {
+                liveService.unregisterLiveCommand(it.name)
+            }
+            liveService.getRegisteredLiveIndicators().forEach {
+                liveService.unregisterLiveIndicator(it)
+            }
+        }
     }
 
     private fun extractSppResources(): File {
