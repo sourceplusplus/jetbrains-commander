@@ -3,7 +3,6 @@ import spp.plugin.*
 import spp.command.*
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
-import spp.jetbrains.sourcemarker.status.LiveStatusManager
 
 class AddSpanCommand : LiveCommand() {
     override val name = message("add_span")
@@ -16,7 +15,7 @@ class AddSpanCommand : LiveCommand() {
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {
-            LiveStatusManager.showSpanStatusBar(project.currentEditor!!, context.lineNumber)
+            liveStatusManager.showSpanStatusBar(project.currentEditor!!, context.lineNumber)
         }
     }
 }

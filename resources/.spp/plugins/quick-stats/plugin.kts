@@ -20,7 +20,6 @@ import spp.jetbrains.monitor.skywalking.model.GetEndpointMetrics
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.jetbrains.monitor.skywalking.toProtocol
 import spp.plugin.*
-import spp.protocol.SourceServices
 import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
 import spp.protocol.artifact.QueryTimeFrame
 import spp.protocol.artifact.metrics.ArtifactMetricResult
@@ -88,7 +87,7 @@ class QuickStatsIndicator : LiveIndicator() {
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
-        SourceServices.Instance.liveView!!.addLiveViewSubscription(
+        liveViewService.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
                 listOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
@@ -111,7 +110,7 @@ class QuickStatsIndicator : LiveIndicator() {
                 }
                 inlay.addEventListener {
                     if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                        SourceServices.Instance.liveView!!.removeLiveViewSubscription(subscriptionId)
+                        liveViewService.removeLiveViewSubscription(subscriptionId)
                     }
                 }
             } else {

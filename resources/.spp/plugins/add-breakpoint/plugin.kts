@@ -3,7 +3,6 @@ import spp.plugin.*
 import spp.command.*
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
-import spp.jetbrains.sourcemarker.status.LiveStatusManager
 
 class AddBreakpointCommand : LiveCommand() {
     override val name = message("add_breakpoint")
@@ -16,7 +15,7 @@ class AddBreakpointCommand : LiveCommand() {
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {
-            LiveStatusManager.showBreakpointStatusBar(project.currentEditor!!, context.lineNumber)
+            liveStatusManager.showBreakpointStatusBar(project.currentEditor!!, context.lineNumber)
         }
     }
 }

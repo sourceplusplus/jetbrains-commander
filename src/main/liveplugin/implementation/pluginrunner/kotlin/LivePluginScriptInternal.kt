@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Computable
 import liveplugin.implementation.LivePluginPaths.livePluginLibPath
 import liveplugin.implementation.plugin.LivePluginService
 import liveplugin.implementation.common.toFilePath
+import liveplugin.implementation.plugin.LiveStatusManager
 import spp.jetbrains.monitor.skywalking.SkywalkingMonitor
 import spp.jetbrains.monitor.skywalking.SkywalkingMonitorService
 import java.io.File
@@ -32,7 +33,8 @@ abstract class LivePluginScriptForCompilation(
     project.getUserData(SkywalkingMonitor.LIVE_VIEW_SERVICE)!!,
     project.getUserData(SkywalkingMonitor.LIVE_INSTRUMENT_SERVICE),
     LivePluginService.getInstance(project),
-    SkywalkingMonitorService.getInstance(project)
+    SkywalkingMonitorService.getInstance(project),
+    LiveStatusManager.getInstance(project)
 )
 
 object LivePluginScriptHighlightingConfig: LivePluginScriptConfig({ createScriptConfig(it, ::highlightingClasspath) })
