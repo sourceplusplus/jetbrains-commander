@@ -33,12 +33,19 @@ import java.awt.Color
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
+/**
+ * Displays inlay marks with convenient metrics for a quick overview of the artifact.
+ */
 class QuickStatsIndicator : LiveIndicator() {
 
     private val log = logger<QuickStatsIndicator>()
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
     private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
 
+    /**
+     * Wait for [GuideMark] with stats that can be displayed.
+     * Currently only endpoints detected by [EndpointDetector] are supported.
+     */
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         if (EndpointDetector.ENDPOINT_ID != event.params.firstOrNull()) return
         displayQuickStatsInlay(guideMark)
