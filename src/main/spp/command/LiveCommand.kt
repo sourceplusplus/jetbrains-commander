@@ -19,6 +19,7 @@ package spp.command
 
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.runBlocking
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import javax.swing.Icon
 
 @Suppress("unused")
@@ -39,4 +40,6 @@ abstract class LiveCommand {
     }
 
     open suspend fun triggerSuspend(context: LiveCommandContext) = Unit
+
+    open fun isAvailable(sourceMark: SourceMark): Boolean = true
 }

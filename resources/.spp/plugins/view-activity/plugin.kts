@@ -1,10 +1,12 @@
 import spp.plugin.*
 import spp.command.*
 import spp.jetbrains.marker.source.info.EndpointDetector
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.protocol.artifact.ArtifactNameUtils
 
 /**
  * Opens the 'Endpoint-Activity' dashboard via portal popup.
@@ -27,6 +29,10 @@ class ViewActivityCommand : LiveCommand() {
         context.guideMark!!.triggerEvent(UPDATE_PORTAL_CONFIG, listOf("setPage", newPage)) {
             context.guideMark!!.triggerEvent(PORTAL_OPENING, listOf(PORTAL_OPENING))
         }
+    }
+
+    override fun isAvailable(sourceMark: SourceMark): Boolean {
+        return ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
     }
 }
 

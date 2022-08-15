@@ -1,8 +1,10 @@
 import com.intellij.openapi.application.runWriteAction
 import spp.plugin.*
 import spp.command.*
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.protocol.artifact.ArtifactNameUtils
 
 class AddSpanCommand : LiveCommand() {
     override val name = message("add_span")
@@ -17,6 +19,10 @@ class AddSpanCommand : LiveCommand() {
         runWriteAction {
             liveStatusManager.showSpanStatusBar(project.currentEditor!!, context.lineNumber)
         }
+    }
+
+    override fun isAvailable(sourceMark: SourceMark): Boolean {
+        return ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
     }
 }
 

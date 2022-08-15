@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import java.io.File
 
 interface LivePluginService {
@@ -28,6 +29,7 @@ interface LivePluginService {
     fun registerLiveCommand(command: LiveCommand)
     fun unregisterLiveCommand(commandName: String)
     fun getRegisteredLiveCommands(): List<LiveCommand>
+    fun getRegisteredLiveCommands(sourceMark: SourceMark): List<LiveCommand>
     fun registerLiveIndicator(indicator: LiveIndicator)
     fun unregisterLiveIndicator(indicator: LiveIndicator)
     fun getRegisteredLiveIndicators(): List<LiveIndicator>

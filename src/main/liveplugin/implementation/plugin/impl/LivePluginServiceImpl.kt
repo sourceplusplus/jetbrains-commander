@@ -25,6 +25,7 @@ import liveplugin.implementation.plugin.LivePluginService
 import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventListener
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 
@@ -87,6 +88,10 @@ class LivePluginServiceImpl(val project: Project) : LivePluginService {
 
     override fun getRegisteredLiveCommands(): List<LiveCommand> {
         return commands.toList()
+    }
+
+    override fun getRegisteredLiveCommands(sourceMark: SourceMark): List<LiveCommand> {
+        return commands.filter { it.isAvailable(sourceMark) }
     }
 
     override fun getRegisteredLiveIndicators(): List<LiveIndicator> {
