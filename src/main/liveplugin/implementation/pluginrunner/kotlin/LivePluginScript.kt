@@ -38,9 +38,20 @@ abstract class LivePluginScript(
     open val pluginDisposable: Disposable,
 
     open val liveService: LiveService,
+    @Deprecated("Use `viewService` instead", ReplaceWith("viewService"))
     open val liveViewService: LiveViewService,
+    @Deprecated("Use `instrumentService` instead", ReplaceWith("instrumentService"))
     open val liveInstrumentService: LiveInstrumentService? = null,
+    @Deprecated("Use `commandService` instead", ReplaceWith("commandService"))
     open val liveCommandService: LivePluginService,
+    @Deprecated("Use `monitorService` instead", ReplaceWith("monitorService"))
     open val skywalkingMonitorService: SkywalkingMonitorService,
+    @Deprecated("Use `statusManager` instead", ReplaceWith("statusManager"))
     open val liveStatusManager: LiveStatusManager
-)
+) {
+    val viewService: LiveViewService get() = this.liveViewService
+    val instrumentService: LiveInstrumentService? get() = this.liveInstrumentService
+    val commandService: LivePluginService get() = this.liveCommandService
+    val monitorService: SkywalkingMonitorService get() = this.skywalkingMonitorService
+    val statusManager: LiveStatusManager get() = this.liveStatusManager
+}
