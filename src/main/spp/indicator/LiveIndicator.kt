@@ -17,6 +17,13 @@
  */
 package spp.indicator
 
+import com.intellij.openapi.project.Project
+import io.vertx.core.Vertx
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.joor.Reflect
+import spp.jetbrains.marker.SourceMarker.Companion.VERTX_KEY
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.guide.GuideMark
@@ -26,7 +33,29 @@ abstract class LiveIndicator {
     open val listenForAllEvents: Boolean = false
     open val listenForEvents: List<IEventCode> = emptyList()
 
-    open suspend fun onRegister() = Unit
-    open suspend fun onUnregister() = Unit
+    private var periodicTimerId = -1L
+    private val project: Project
+    private val vertx: Vertx
+
+    init {
+        val plugin = Reflect.on(this).get<Any>("this\$0")
+        project = Reflect.on(plugin).get("project")
+        vertx = project.getUserData(VERTX_KEY)!!
+    }
+
+    open suspend fun onRegister() {
+        vertx.setPeriodic(5000) { timerId ->
+            periodicTimerId = timerId
+            GlobalScope.launch(vertx.dispatcher()) {
+                refreshIndicator()
+            }
+        }
+    }
+
+    open suspend fun onUnregister() {
+        vertx.cancelTimer(periodicTimerId)
+    }
+
+    open suspend fun refreshIndicator() = Unit
     open suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) = Unit
 }

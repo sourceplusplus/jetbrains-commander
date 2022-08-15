@@ -2,14 +2,10 @@ import com.apollographql.apollo3.api.Optional
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import monitor.skywalking.protocol.type.Order
 import monitor.skywalking.protocol.type.Scope
 import monitor.skywalking.protocol.type.TopNCondition
 import spp.indicator.LiveIndicator
-import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
@@ -37,27 +33,8 @@ class FailingEndpointIndicator : LiveIndicator() {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val failingEndpoints = mutableMapOf<String, GuideMark>()
     private val failingIndicators = mutableMapOf<GuideMark, GutterMark>()
-    private var periodicTimerId = -1L
 
-    override suspend fun onRegister() {
-        log.info("FailingEndpointIndicator registered")
-        vertx.setPeriodic(5000) { timerId ->
-            periodicTimerId = timerId
-            GlobalScope.launch(vertx.dispatcher()) {
-                refreshIndicators()
-            }
-        }
-    }
-
-    //todo: won't need with multi-project SourceMarkerPlugin support (live-platform/#475)
-    override suspend fun onUnregister() {
-        log.info("FailingEndpointIndicator unregistered")
-        vertx.cancelTimer(periodicTimerId)
-        failingEndpoints.clear()
-        failingIndicators.clear()
-    }
-
-    private suspend fun refreshIndicators() {
+    override suspend fun refreshIndicator() {
         val currentFailing = getTopFailingEndpoints()
 
         //trigger adds
@@ -117,7 +94,7 @@ class FailingEndpointIndicator : LiveIndicator() {
                     gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
                 }
             }
-            else -> refreshIndicators()
+            else -> refreshIndicator()
         }
     }
 
