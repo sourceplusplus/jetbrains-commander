@@ -15,8 +15,6 @@ class NewCommandCommand : LiveCommand() {
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Add new custom live command" + "</span></html>"
     override val params: List<String> = listOf("Command Name")
-    override var selectedIcon = findIcon("icons/new-command_selected.svg")
-    override var unselectedIcon = findIcon("icons/new-command_unselected.svg")
 
     override fun trigger(context: LiveCommandContext) {
         if (context.args.isEmpty()) {

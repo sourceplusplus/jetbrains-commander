@@ -10,8 +10,6 @@ class AddBreakpointCommand : LiveCommand() {
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
             ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("on_line") +
             " *lineNumber*</span></html>"
-    override var selectedIcon = findIcon("icons/live-breakpoint_selected.svg")
-    override var unselectedIcon = findIcon("icons/live-breakpoint_unselected.svg")
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {

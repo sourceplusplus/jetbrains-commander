@@ -9,8 +9,6 @@ class ClearInstrumentsCommand : LiveCommand() {
     override val name = "Clear Instruments"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             message("live_instrument") + " ➛ " + message("clear_all") + "</span></html>"
-    override var selectedIcon = findIcon("icons/clear-instruments_selected.svg")
-    override var unselectedIcon = findIcon("icons/clear-instruments_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         liveInstrumentService!!.clearAllLiveInstruments(null).onComplete {

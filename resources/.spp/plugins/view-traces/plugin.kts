@@ -17,8 +17,6 @@ class ViewTracesCommand : LiveCommand() {
             message("live_view") + " ➛ " + message("traces") + " ➛ " + message("scope") +
             ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("method") +
             "</span></html>"
-    override var selectedIcon = findIcon("icons/view-traces_selected.svg")
-    override var unselectedIcon = findIcon("icons/view-traces_unselected.svg")
 
     override fun trigger(context: LiveCommandContext) {
         val endpointId = context.guideMark?.getUserData(EndpointDetector.ENDPOINT_ID) ?: return
