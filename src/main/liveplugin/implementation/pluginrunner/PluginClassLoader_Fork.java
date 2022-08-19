@@ -86,9 +86,7 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
                 // `kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED` property
                 "kotlin.coroutines.intrinsics.CoroutineSingletons",
                 "kotlin.coroutines.AbstractCoroutineContextElement",
-                "kotlin.coroutines.AbstractCoroutineContextKey",
-                //todo: idk why this is needed but solves attempted duplicate abstract class definition error
-                "kotlin.coroutines.jvm.internal.ContinuationImpl"
+                "kotlin.coroutines.AbstractCoroutineContextKey"
         ));
         String classes = System.getProperty("idea.kotlin.classes.used.in.signatures");
         if (classes != null) {

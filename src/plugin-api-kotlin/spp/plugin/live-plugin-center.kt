@@ -9,9 +9,9 @@ import liveplugin.implementation.pluginrunner.kotlin.LivePluginScript
 import spp.command.LiveCommand
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
-import spp.jetbrains.marker.SourceMarker.Companion.VERTX_KEY
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.guide.GuideMark
+import spp.jetbrains.sourcemarker.UserData
 import java.io.File
 import javax.swing.Icon
 
@@ -54,4 +54,4 @@ fun LivePluginScript.findByEndpointName(endpointName: String): GuideMark? {
 }
 
 val LivePluginScript.vertx: Vertx
-    get() = project.getUserData(VERTX_KEY)!!
+    get() = UserData.vertx(project)
