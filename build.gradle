@@ -55,17 +55,17 @@ tasks.buildSearchableOptions {
 dependencies {
 	if (findProject(":interfaces:jetbrains") != null) {
 		compileOnly project(":interfaces:jetbrains:commander:kotlin-compiler-wrapper")
+		compileOnly project(":interfaces:jetbrains:core")
 		compileOnly project(":interfaces:jetbrains:marker")
 		compileOnly project(":interfaces:jetbrains:monitor")
 		compileOnly project(":protocol")
 	} else {
+		compileOnly project(":core")
 		compileOnly project(":marker")
 		compileOnly project(":monitor")
 		compileOnly("plus.sourceplus:protocol:$projectVersion")
 	}
-    compileOnly("io.vertx:vertx-core:$vertxVersion")
-	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
-	compileOnly("org.jooq:joor:$joorVersion")
+	compileOnly("io.vertx:vertx-core:$vertxVersion")
 
 	// Bundle kotlin compiler and stdlib with LivePlugin because they are not always included into IDEs
 	// and because kotlin jars in IDE are likely to be updated, potentially breaking liveplugins,
