@@ -5,6 +5,7 @@ import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.sourcemarker.PluginBundle.message
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.plugin.*
+import spp.protocol.artifact.ArtifactNameUtils
 
 class AddMeterCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_meter")
@@ -21,6 +22,7 @@ class AddMeterCommand(project: Project) : LiveCommand(project) {
 
     override fun isAvailable(sourceMark: SourceMark): Boolean {
         return liveInstrumentService != null
+                && ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
     }
 }
 

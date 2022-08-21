@@ -21,7 +21,8 @@ class AddSpanCommand(project: Project) : LiveCommand(project) {
     }
 
     override fun isAvailable(sourceMark: SourceMark): Boolean {
-        return liveInstrumentService != null && ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
+        return liveInstrumentService != null
+                && ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
     }
 }
 
