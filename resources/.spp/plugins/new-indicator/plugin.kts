@@ -39,19 +39,20 @@ class NewIndicatorCommand(project: Project) : LiveCommand(project) {
     private fun getNewCommandScript(indicatorName: String): String {
         val properIndicatorName = indicatorName.split(" ", "-").map { it.capitalize() }.joinToString("")
         return """
+            import com.intellij.openapi.project.Project
             import spp.indicator.*
-            import spp.plugin.*
             import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
             import spp.jetbrains.marker.source.mark.guide.GuideMark
+            import spp.plugin.*
 
-            class ${properIndicatorName}Indicator : LiveIndicator() {
+            class ${properIndicatorName}Indicator(project: Project) : LiveIndicator(project) {
 
                 override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
                     show("Hello world")
                 }
             }
 
-            registerIndicator(${properIndicatorName}Indicator())
+            registerIndicator(${properIndicatorName}Indicator(project))
         """.trimIndent() + "\n"
     }
 }

@@ -39,11 +39,12 @@ class NewCommandCommand(project: Project) : LiveCommand(project) {
     private fun getNewCommandScript(commandName: String): String {
         val properCommandName = commandName.split(" ", "-").map { it.capitalize() }.joinToString("")
         return """
-            import spp.plugin.*
+            import com.intellij.openapi.project.Project
             import spp.command.*
             import spp.jetbrains.sourcemarker.PluginUI.*
+            import spp.plugin.*
 
-            class ${properCommandName}Command : LiveCommand() {
+            class ${properCommandName}Command(project: Project) : LiveCommand(project) {
                 override val name = "$commandName"
                 override val description = "<html><span style=\"color: ${'$'}{getCommandTypeColor()}\">" +
                         "My custom live command" + "</span></html>"
@@ -53,7 +54,7 @@ class NewCommandCommand(project: Project) : LiveCommand(project) {
                 }
             }
 
-            registerCommand(${properCommandName}Command())
+            registerCommand(${properCommandName}Command(project))
         """.trimIndent() + "\n"
     }
 }
