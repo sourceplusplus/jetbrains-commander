@@ -1,15 +1,16 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.project.Project
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.await
 import spp.command.LiveCommand
 import spp.command.LiveCommandContext
 import spp.jetbrains.marker.impl.ArtifactCreationService
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
-import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.plugin.registerCommand
 import spp.plugin.show
 import spp.protocol.SourceServices.Provide.toLiveInstrumentSubscriberAddress
@@ -23,12 +24,10 @@ import spp.protocol.instrument.throttle.ThrottleStep.SECOND
 import spp.protocol.marshall.ProtocolMarshaller.deserializeLiveBreakpointHit
 import java.awt.Color
 
-class WatchVariableCommand : LiveCommand() {
+class WatchVariableCommand(project: Project) : LiveCommand(project) {
     override val name = "watch-variable"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Adds live breakpoint to display the variable's current value" + "</span></html>"
-    override val selectedIcon: String = findIcon("icons/watch-variable_selected.svg")
-    override val unselectedIcon: String = findIcon("icons/watch-variable_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val variableName = context.variableName
@@ -38,14 +37,16 @@ class WatchVariableCommand : LiveCommand() {
         }
         val selfId = liveService.getSelf().await().developer.id
 
-        liveInstrumentService!!.addLiveInstrument(LiveBreakpoint(
+        liveInstrumentService!!.addLiveInstrument(
+            LiveBreakpoint(
                 LiveSourceLocation(
-                        ArtifactNameUtils.getQualifiedClassName(context.artifactQualifiedName.identifier)!!,
-                        context.lineNumber + 1
+                    ArtifactNameUtils.getQualifiedClassName(context.artifactQualifiedName.identifier)!!,
+                    context.lineNumber + 1
                 ),
                 throttle = InstrumentThrottle(1, SECOND),
                 hitLimit = -1
-        )).onComplete {
+            )
+        ).onComplete {
             if (it.succeeded()) {
                 runReadAction { addInlay(context, selfId, it.result().id!!, variableName) }
             } else {
@@ -86,8 +87,10 @@ class WatchVariableCommand : LiveCommand() {
             }
         }
     }
+
+    override fun isAvailable(sourceMark: SourceMark): Boolean {
+        return liveInstrumentService != null
+    }
 }
 
-if (liveInstrumentService != null) {
-    registerCommand(WatchVariableCommand())
-}
+registerCommand(WatchVariableCommand(project))

@@ -1,4 +1,5 @@
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.project.Project
 import liveplugin.PluginUtil.showInConsole
 import liveplugin.implementation.Console
 import spp.command.LiveCommand
@@ -10,7 +11,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-class SelfInfoCommand : LiveCommand() {
+class SelfInfoCommand(project: Project) : LiveCommand(project) {
     override val name = "Self Info"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Displays current developer information" + "</span></html>"
@@ -54,4 +55,4 @@ class SelfInfoCommand : LiveCommand() {
     }
 }
 
-registerCommand(SelfInfoCommand())
+registerCommand(SelfInfoCommand(project))

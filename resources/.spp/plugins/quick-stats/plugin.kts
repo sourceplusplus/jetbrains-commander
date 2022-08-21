@@ -1,5 +1,6 @@
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
@@ -7,22 +8,20 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
-import spp.jetbrains.monitor.skywalking.SkywalkingClient
+import spp.jetbrains.monitor.skywalking.model.DurationStep
 import spp.jetbrains.monitor.skywalking.model.GetEndpointMetrics
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
-import spp.jetbrains.monitor.skywalking.toProtocol
 import spp.plugin.*
 import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
-import spp.protocol.artifact.QueryTimeFrame
-import spp.protocol.artifact.metrics.ArtifactMetricResult
+import spp.protocol.artifact.metrics.ArtifactMetrics
 import spp.protocol.artifact.metrics.MetricType
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.utils.fromPerSecondToPrettyFrequency
@@ -36,7 +35,7 @@ import java.time.temporal.ChronoUnit
 /**
  * Displays inlay marks with convenient metrics for a quick overview of the artifact.
  */
-class QuickStatsIndicator : LiveIndicator() {
+class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
 
     private val log = logger<QuickStatsIndicator>()
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
@@ -64,18 +63,10 @@ class QuickStatsIndicator : LiveIndicator() {
         val metricsRequest = GetEndpointMetrics(
             listenMetrics,
             sourceMark.getUserData(EndpointDetector.ENDPOINT_ID)!!,
-            ZonedDuration(startTime, endTime, SkywalkingClient.DurationStep.MINUTE)
+            ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         )
 
-        val currentMetrics = skywalkingMonitorService.getMetrics(metricsRequest)
-        val metricResult = toProtocol(
-            sourceMark.artifactQualifiedName,
-            QueryTimeFrame.LAST_15_MINUTES, //todo: don't need
-            MetricType.ResponseTime_Average, //todo: dont need
-            metricsRequest,
-            currentMetrics
-        )
-
+        val metrics = skywalkingMonitorService.getMetrics(metricsRequest)
         val inlay = ApplicationManager.getApplication().runReadAction(Computable {
             ArtifactCreationService.createMethodInlayMark(
                 sourceMark.sourceFileMarker,
@@ -83,7 +74,7 @@ class QuickStatsIndicator : LiveIndicator() {
                 false
             )
         })
-        inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metricResult))
+        inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metrics))
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
         inlay.configuration.virtualText!!.fontSize = -0.5f
         inlay.configuration.virtualText!!.relativeFontSize = true
@@ -126,15 +117,15 @@ class QuickStatsIndicator : LiveIndicator() {
         }
     }
 
-    private fun formatMetricResult(result: ArtifactMetricResult): String {
+    private fun formatMetricResult(artifactMetrics: List<ArtifactMetrics>): String {
         val sb = StringBuilder()
-        val resp = result.artifactMetrics.find { it.metricType == MetricType.Throughput_Average }!!
+        val resp = artifactMetrics.find { it.metricType == MetricType.Throughput_Average }!!
         val respValue = (resp.values.last() / 60.0).fromPerSecondToPrettyFrequency({ message(it) })
         sb.append(message(resp.metricType.simpleName)).append(": ").append(respValue).append(" | ")
-        val cpm = result.artifactMetrics.find { it.metricType == MetricType.ResponseTime_Average }!!
+        val cpm = artifactMetrics.find { it.metricType == MetricType.ResponseTime_Average }!!
         sb.append(message(cpm.metricType.simpleName)).append(": ").append(cpm.values.last().toInt())
             .append(message("ms")).append(" | ")
-        val sla = result.artifactMetrics.find { it.metricType == MetricType.ServiceLevelAgreement_Average }!!
+        val sla = artifactMetrics.find { it.metricType == MetricType.ServiceLevelAgreement_Average }!!
         sb.append(message(sla.metricType.simpleName)).append(": ").append(sla.values.last().toDouble() / 100.0)
             .append("%")
         return "$sb"
@@ -171,4 +162,4 @@ class QuickStatsIndicator : LiveIndicator() {
     }
 }
 
-registerIndicator(QuickStatsIndicator())
+registerIndicator(QuickStatsIndicator(project))

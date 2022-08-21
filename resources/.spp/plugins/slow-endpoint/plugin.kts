@@ -1,31 +1,28 @@
-import com.apollographql.apollo3.api.Optional
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import monitor.skywalking.protocol.type.Order
-import monitor.skywalking.protocol.type.Scope
-import monitor.skywalking.protocol.type.TopNCondition
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
-import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
+import spp.jetbrains.monitor.skywalking.model.DurationStep
+import spp.jetbrains.monitor.skywalking.model.TopNCondition
+import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
+import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 
-class SlowEndpointIndicator : LiveIndicator() {
+class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
 
     companion object {
         private val log = logger<SlowEndpointIndicator>()
@@ -89,6 +86,7 @@ class SlowEndpointIndicator : LiveIndicator() {
                     }
                 }
             }
+
             INDICATOR_STOPPED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
@@ -97,6 +95,7 @@ class SlowEndpointIndicator : LiveIndicator() {
                     gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
                 }
             }
+
             else -> refreshIndicator()
         }
     }
@@ -110,9 +109,9 @@ class SlowEndpointIndicator : LiveIndicator() {
         val slowestEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 "endpoint_resp_time",
-                Optional.presentIfNotNull(service.name),
-                Optional.presentIfNotNull(true),
-                Optional.presentIfNotNull(Scope.Endpoint),
+                service.name,
+                true,
+                Scope.Endpoint,
                 ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
                 Order.DES
             ), duration
@@ -122,4 +121,4 @@ class SlowEndpointIndicator : LiveIndicator() {
     }
 }
 
-registerIndicator(SlowEndpointIndicator())
+registerIndicator(SlowEndpointIndicator(project))

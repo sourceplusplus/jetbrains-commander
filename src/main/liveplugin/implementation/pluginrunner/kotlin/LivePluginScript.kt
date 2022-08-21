@@ -2,12 +2,6 @@ package liveplugin.implementation.pluginrunner.kotlin
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import liveplugin.implementation.plugin.LivePluginService
-import liveplugin.implementation.plugin.LiveStatusManager
-import spp.jetbrains.monitor.skywalking.SkywalkingMonitorService
-import spp.protocol.service.LiveInstrumentService
-import spp.protocol.service.LiveService
-import spp.protocol.service.LiveViewService
 import kotlin.script.experimental.annotations.KotlinScript
 
 @KotlinScript(
@@ -35,23 +29,5 @@ abstract class LivePluginScript(
      * Instance of `com.intellij.openapi.Disposable` which is disposed just before re-running plugin.
      * Can be useful for cleanup, e.g. un-registering IDE listeners.
      */
-    open val pluginDisposable: Disposable,
-
-    open val liveService: LiveService,
-    @Deprecated("Use `viewService` instead", ReplaceWith("viewService"))
-    open val liveViewService: LiveViewService,
-    @Deprecated("Use `instrumentService` instead", ReplaceWith("instrumentService"))
-    open val liveInstrumentService: LiveInstrumentService? = null,
-    @Deprecated("Use `commandService` instead", ReplaceWith("commandService"))
-    open val liveCommandService: LivePluginService,
-    @Deprecated("Use `monitorService` instead", ReplaceWith("monitorService"))
-    open val skywalkingMonitorService: SkywalkingMonitorService,
-    @Deprecated("Use `statusManager` instead", ReplaceWith("statusManager"))
-    open val liveStatusManager: LiveStatusManager
-) {
-    val viewService: LiveViewService get() = this.liveViewService
-    val instrumentService: LiveInstrumentService? get() = this.liveInstrumentService
-    val commandService: LivePluginService get() = this.liveCommandService
-    val monitorService: SkywalkingMonitorService get() = this.skywalkingMonitorService
-    val statusManager: LiveStatusManager get() = this.liveStatusManager
-}
+    open val pluginDisposable: Disposable
+)

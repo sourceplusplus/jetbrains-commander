@@ -1,16 +1,17 @@
 import com.intellij.ide.util.DirectoryUtil
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.PsiNavigateUtil
 import liveplugin.implementation.common.IdeUtil
-import spp.plugin.*
 import spp.command.*
-import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.plugin.*
 
-class NewIndicatorCommand : LiveCommand() {
+class NewIndicatorCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Indicator")
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Add new custom live indicator" + "</span></html>"
@@ -26,7 +27,7 @@ class NewIndicatorCommand : LiveCommand() {
             val indicatorName = context.args.joinToString(" ")
             val indicatorDir = indicatorName.replace(" ", "-")
             val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
-                    "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(indicatorName)
+                "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(indicatorName)
             )
             val baseDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(project.baseDir)
             val psiDirectory = DirectoryUtil.createSubdirectories(".spp/plugins/$indicatorDir", baseDirectory, "/")
@@ -55,4 +56,4 @@ class NewIndicatorCommand : LiveCommand() {
     }
 }
 
-registerCommand(NewIndicatorCommand())
+registerCommand(NewIndicatorCommand(project))

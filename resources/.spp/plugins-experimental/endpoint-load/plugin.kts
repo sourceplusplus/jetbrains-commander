@@ -1,24 +1,23 @@
-import com.apollographql.apollo3.api.Optional
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
-import monitor.skywalking.protocol.type.Order
-import monitor.skywalking.protocol.type.Scope
-import monitor.skywalking.protocol.type.TopNCondition
 import spp.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
-import spp.jetbrains.monitor.skywalking.SkywalkingClient.DurationStep
+import spp.jetbrains.marker.source.info.EndpointDetector
+import spp.jetbrains.monitor.skywalking.model.DurationStep
+import spp.jetbrains.monitor.skywalking.model.TopNCondition
+import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
+import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
-import spp.plugin.registerIndicator
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-class EndpointLoadIndicator : LiveIndicator() {
+class EndpointLoadIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
@@ -48,9 +47,9 @@ class EndpointLoadIndicator : LiveIndicator() {
         val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 "endpoint_cpm",
-                Optional.presentIfNotNull(service.name),
-                Optional.presentIfNotNull(true),
-                Optional.presentIfNotNull(Scope.Endpoint),
+                service.name,
+                true,
+                Scope.Endpoint,
                 (skywalkingMonitorService.getEndpoints(service.name, 1000).size() * 0.20).toInt(), //relative top 20%
                 Order.DES
             ), duration
@@ -60,4 +59,4 @@ class EndpointLoadIndicator : LiveIndicator() {
     }
 }
 
-registerIndicator(EndpointLoadIndicator())
+registerIndicator(EndpointLoadIndicator(project))

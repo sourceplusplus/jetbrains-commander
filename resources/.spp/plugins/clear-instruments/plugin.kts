@@ -1,11 +1,13 @@
 import com.intellij.notification.NotificationType.ERROR
+import com.intellij.openapi.project.Project
 import spp.command.LiveCommand
 import spp.command.LiveCommandContext
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.sourcemarker.PluginBundle.message
 import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
 import spp.plugin.*
 
-class ClearInstrumentsCommand : LiveCommand() {
+class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
     override val name = "Clear Instruments"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             message("live_instrument") + " ➛ " + message("clear_all") + "</span></html>"
@@ -19,8 +21,10 @@ class ClearInstrumentsCommand : LiveCommand() {
             }
         }
     }
+
+    override fun isAvailable(sourceMark: SourceMark): Boolean {
+        return liveInstrumentService != null
+    }
 }
 
-if (liveInstrumentService != null) {
-    registerCommand(ClearInstrumentsCommand())
-}
+registerCommand(ClearInstrumentsCommand(project))

@@ -1,26 +1,20 @@
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.project.Project
 import spp.command.LiveCommand
 import spp.command.LiveCommandContext
 import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
-import spp.plugin.registerCommand
-import spp.plugin.show
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import spp.plugin.*
+import java.time.*
 import java.time.format.DateTimeFormatter
 
-class BootTimeCommand : LiveCommand() {
+class BootTimeCommand(project: Project) : LiveCommand(project) {
 
     override val name = "boot-time"
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Gets the earliest boot time for the current service" + "</span></html>"
-    override val selectedIcon = findIcon("icons/boot-time_selected.svg")
-    override val unselectedIcon = findIcon("icons/boot-time_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
-        val serverTimezone = skywalkingMonitorService.getTimeInfo().result?.timezone
+        val serverTimezone = skywalkingMonitorService.getTimeInfo().timezone
         if (serverTimezone == null) {
             show("Unable to determine server timezone", notificationType = NotificationType.ERROR)
             return
@@ -54,4 +48,4 @@ class BootTimeCommand : LiveCommand() {
     }
 }
 
-registerCommand(BootTimeCommand())
+registerCommand(BootTimeCommand(project))

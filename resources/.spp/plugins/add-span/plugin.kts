@@ -1,12 +1,13 @@
 import com.intellij.openapi.application.runWriteAction
-import spp.plugin.*
+import com.intellij.openapi.project.Project
 import spp.command.*
 import spp.jetbrains.marker.source.mark.api.SourceMark
-import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
 
-class AddSpanCommand : LiveCommand() {
+class AddSpanCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_span")
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
@@ -20,10 +21,8 @@ class AddSpanCommand : LiveCommand() {
     }
 
     override fun isAvailable(sourceMark: SourceMark): Boolean {
-        return ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
+        return liveInstrumentService != null && ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
     }
 }
 
-if (liveInstrumentService != null) {
-    registerCommand(AddSpanCommand())
-}
+registerCommand(AddSpanCommand(project))

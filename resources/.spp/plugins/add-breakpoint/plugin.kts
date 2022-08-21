@@ -1,10 +1,12 @@
 import com.intellij.openapi.application.runWriteAction
-import spp.plugin.*
+import com.intellij.openapi.project.Project
 import spp.command.*
-import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.plugin.*
 
-class AddBreakpointCommand : LiveCommand() {
+class AddBreakpointCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_breakpoint")
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
@@ -16,8 +18,10 @@ class AddBreakpointCommand : LiveCommand() {
             liveStatusManager.showBreakpointStatusBar(project.currentEditor!!, context.lineNumber)
         }
     }
+
+    override fun isAvailable(sourceMark: SourceMark): Boolean {
+        return liveInstrumentService != null
+    }
 }
 
-if (liveInstrumentService != null) {
-    registerCommand(AddBreakpointCommand())
-}
+registerCommand(AddBreakpointCommand(project))

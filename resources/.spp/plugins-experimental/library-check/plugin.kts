@@ -1,17 +1,16 @@
 import com.intellij.notification.NotificationType.ERROR
+import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonArray
 import liveplugin.PluginUtil.*
 import spp.command.*
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.plugin.*
 
-class LibraryCheckCommand : LiveCommand() {
+class LibraryCheckCommand(project: Project) : LiveCommand(project) {
     override val name = "library-check"
     override val params: List<String> = listOf("Library Name") //todo: optional params
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Find all jar libraries used in the currently active services" + "</span></html>"
-    override val selectedIcon: String = findIcon("icons/library-check_selected.svg")
-    override val unselectedIcon: String = findIcon("icons/library-check_unselected.svg")
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val librarySearch = (context.args.firstOrNull() ?: "").lowercase()
@@ -32,8 +31,8 @@ class LibraryCheckCommand : LiveCommand() {
             val jarDependencies = it.attributes.find { it.name == "Jar Dependencies" }?.let { JsonArray(it.value) }
             jarDependencies?.let {
                 foundLibraries.addAll(
-                        jarDependencies.list.map { it.toString() }
-                                .filter { it.lowercase().contains(librarySearch) }
+                    jarDependencies.list.map { it.toString() }
+                        .filter { it.lowercase().contains(librarySearch) }
                 )
             }
         }
@@ -41,11 +40,11 @@ class LibraryCheckCommand : LiveCommand() {
         val serviceCount = activeServices.size
         val instanceCount = activeServiceInstances.size
         showInConsole(
-                foundLibraries,
-                "Libraries Found (Services: $serviceCount - Instances: $instanceCount)",
-                project
+            foundLibraries,
+            "Libraries Found (Services: $serviceCount - Instances: $instanceCount)",
+            project
         )
     }
 }
 
-registerCommand(LibraryCheckCommand())
+registerCommand(LibraryCheckCommand(project))

@@ -1,17 +1,18 @@
-import spp.plugin.*
+import com.intellij.openapi.project.Project
 import spp.command.*
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
-import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.sourcemarker.PluginBundle.message
+import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
 
 /**
  * Opens the 'Endpoint-Traces' dashboard via portal popup.
  */
-class ViewTracesCommand : LiveCommand() {
+class ViewTracesCommand(project: Project) : LiveCommand(project) {
     override val name = message("view_traces")
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             message("live_view") + " ➛ " + message("traces") + " ➛ " + message("scope") +
@@ -34,4 +35,4 @@ class ViewTracesCommand : LiveCommand() {
     }
 }
 
-registerCommand(ViewTracesCommand())
+registerCommand(ViewTracesCommand(project))

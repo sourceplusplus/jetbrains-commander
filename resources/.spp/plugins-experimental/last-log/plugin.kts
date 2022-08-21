@@ -1,5 +1,6 @@
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -12,7 +13,6 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
-import spp.jetbrains.sourcemarker.SourceMarkerPlugin.vertx
 import spp.jetbrains.sourcemarker.mark.SourceMarkKeys
 import spp.plugin.registerIndicator
 import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
@@ -25,7 +25,7 @@ import spp.protocol.view.LiveViewEvent
 import spp.protocol.view.LiveViewSubscription
 import java.awt.Color
 
-class LastLogIndicator : LiveIndicator() {
+class LastLogIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val log = logger<LastLogIndicator>()
         private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
@@ -105,4 +105,4 @@ class LastLogIndicator : LiveIndicator() {
     }
 }
 
-registerIndicator(LastLogIndicator())
+registerIndicator(LastLogIndicator(project))

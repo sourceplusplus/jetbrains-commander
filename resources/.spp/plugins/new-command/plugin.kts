@@ -1,6 +1,7 @@
 import com.intellij.ide.util.DirectoryUtil
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.PsiNavigateUtil
@@ -10,7 +11,7 @@ import spp.command.*
 import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.jetbrains.sourcemarker.PluginBundle.message
 
-class NewCommandCommand : LiveCommand() {
+class NewCommandCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Command")
     override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
             "Add new custom live command" + "</span></html>"
@@ -57,4 +58,4 @@ class NewCommandCommand : LiveCommand() {
     }
 }
 
-registerCommand(NewCommandCommand())
+registerCommand(NewCommandCommand(project))
