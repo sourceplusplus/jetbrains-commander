@@ -2,18 +2,16 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import liveplugin.PluginUtil.showInConsole
 import liveplugin.implementation.Console
-import spp.command.LiveCommand
-import spp.command.LiveCommandContext
-import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
-import spp.plugin.registerCommand
-import spp.plugin.show
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.*
+import spp.plugin.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 class PlatformStatsCommand(project: Project) : LiveCommand(project) {
     override val name = "Platform Stats"
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Displays Source++ platform stats" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

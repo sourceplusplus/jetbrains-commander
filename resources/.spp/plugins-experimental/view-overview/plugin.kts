@@ -1,10 +1,12 @@
 import com.intellij.openapi.project.Project
-import spp.command.*
-import spp.jetbrains.marker.jvm.psi.EndpointDetector
+import spp.jetbrains.PluginBundle.message
+import spp.jetbrains.PluginUI.commandHighlightColor
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
-import spp.jetbrains.sourcemarker.PluginBundle.message
-import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.plugin.*
 
 /**
@@ -12,9 +14,9 @@ import spp.plugin.*
  */
 class ViewOverviewCommand(project: Project) : LiveCommand(project) {
     override val name = message("view_overview")
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("overview") + " ➛ " + message("scope") +
-            ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("class") +
+            ": </span><span style=\"color: $commandHighlightColor\">" + message("class") +
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

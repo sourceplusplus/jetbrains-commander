@@ -6,14 +6,15 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.PsiNavigateUtil
 import liveplugin.implementation.common.IdeUtil
+import spp.jetbrains.*
+import spp.jetbrains.PluginBundle.message
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.*
 import spp.plugin.*
-import spp.command.*
-import spp.jetbrains.sourcemarker.PluginUI.*
-import spp.jetbrains.sourcemarker.PluginBundle.message
 
 class NewCommandCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Command")
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Add new custom live command" + "</span></html>"
     override val params: List<String> = listOf("Command Name")
 
@@ -27,7 +28,7 @@ class NewCommandCommand(project: Project) : LiveCommand(project) {
             val commandName = context.args.joinToString(" ")
             val commandDir = commandName.replace(" ", "-")
             val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
-                    "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(commandName)
+                "plugin.kts", IdeUtil.kotlinFileType, getNewCommandScript(commandName)
             )
             val baseDirectory = PsiDirectoryFactory.getInstance(project).createDirectory(project.baseDir)
             val psiDirectory = DirectoryUtil.createSubdirectories(".spp/plugins/$commandDir", baseDirectory, "/")
@@ -40,13 +41,14 @@ class NewCommandCommand(project: Project) : LiveCommand(project) {
         val properCommandName = commandName.split(" ", "-").map { it.capitalize() }.joinToString("")
         return """
             import com.intellij.openapi.project.Project
-            import spp.command.*
-            import spp.jetbrains.sourcemarker.PluginUI.*
+            import spp.jetbrains.PluginUI.commandTypeColor
+            import spp.jetbrains.command.LiveCommand
+            import spp.jetbrains.command.LiveCommandContext
             import spp.plugin.*
 
             class ${properCommandName}Command(project: Project) : LiveCommand(project) {
                 override val name = "$commandName"
-                override val description = "<html><span style=\"color: ${'$'}{getCommandTypeColor()}\">" +
+                override val description = "<html><span style=\"color: ${'$'}commandTypeColor\">" +
                         "My custom live command" + "</span></html>"
 
                 override fun trigger(context: LiveCommandContext) {

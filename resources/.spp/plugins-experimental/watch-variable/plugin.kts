@@ -4,15 +4,14 @@ import com.intellij.openapi.project.Project
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.await
-import spp.command.LiveCommand
-import spp.command.LiveCommandContext
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
-import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
-import spp.plugin.registerCommand
-import spp.plugin.show
+import spp.plugin.*
 import spp.protocol.SourceServices.Provide.toLiveInstrumentSubscriberAddress
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.instrument.LiveBreakpoint
@@ -26,7 +25,7 @@ import java.awt.Color
 
 class WatchVariableCommand(project: Project) : LiveCommand(project) {
     override val name = "watch-variable"
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Adds live breakpoint to display the variable's current value" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

@@ -6,14 +6,15 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.util.PsiNavigateUtil
 import liveplugin.implementation.common.IdeUtil
-import spp.command.*
-import spp.jetbrains.sourcemarker.PluginBundle.message
-import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.jetbrains.PluginBundle.message
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
 import spp.plugin.*
 
 class NewIndicatorCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Indicator")
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Add new custom live indicator" + "</span></html>"
     override val params: List<String> = listOf("Indicator Name")
 
@@ -40,7 +41,7 @@ class NewIndicatorCommand(project: Project) : LiveCommand(project) {
         val properIndicatorName = indicatorName.split(" ", "-").map { it.capitalize() }.joinToString("")
         return """
             import com.intellij.openapi.project.Project
-            import spp.indicator.*
+            import spp.jetbrains.indicator.LiveIndicator
             import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
             import spp.jetbrains.marker.source.mark.guide.GuideMark
             import spp.plugin.*

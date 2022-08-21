@@ -2,14 +2,15 @@ import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonArray
 import liveplugin.PluginUtil.*
-import spp.command.*
-import spp.jetbrains.sourcemarker.PluginUI.*
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
 import spp.plugin.*
 
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
     override val name = "library-check"
     override val params: List<String> = listOf("Library Name") //todo: optional params
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Find all jar libraries used in the currently active services" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

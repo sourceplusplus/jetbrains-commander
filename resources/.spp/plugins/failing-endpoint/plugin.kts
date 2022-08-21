@@ -2,7 +2,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
-import spp.indicator.LiveIndicator
+import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode

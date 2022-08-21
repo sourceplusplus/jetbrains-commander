@@ -1,17 +1,19 @@
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
-import spp.command.*
+import spp.jetbrains.PluginBundle.message
+import spp.jetbrains.PluginUI.commandHighlightColor
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.marker.source.mark.api.SourceMark
-import spp.jetbrains.sourcemarker.PluginBundle.message
-import spp.jetbrains.sourcemarker.PluginUI.*
 import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
 
 class AddLogCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_log")
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
-            ": </span><span style=\"color: ${getCommandHighlightColor()}\">" + message("on_line") +
+            ": </span><span style=\"color: $commandHighlightColor\">" + message("on_line") +
             " *lineNumber*</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

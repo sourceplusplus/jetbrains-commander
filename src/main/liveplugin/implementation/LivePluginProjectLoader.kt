@@ -13,8 +13,8 @@ import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.livePluginNotificationGroup
 import liveplugin.implementation.common.toFilePath
-import liveplugin.implementation.plugin.LivePluginService
-import liveplugin.implementation.plugin.impl.LivePluginServiceImpl
+import spp.jetbrains.plugin.LivePluginService
+import spp.jetbrains.plugin.impl.LivePluginServiceImpl
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files

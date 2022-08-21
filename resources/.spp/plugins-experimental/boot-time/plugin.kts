@@ -1,8 +1,8 @@
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import spp.command.LiveCommand
-import spp.command.LiveCommandContext
-import spp.jetbrains.sourcemarker.PluginUI.getCommandTypeColor
+import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.command.LiveCommand
+import spp.jetbrains.command.LiveCommandContext
 import spp.plugin.*
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 class BootTimeCommand(project: Project) : LiveCommand(project) {
 
     override val name = "boot-time"
-    override val description = "<html><span style=\"color: ${getCommandTypeColor()}\">" +
+    override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Gets the earliest boot time for the current service" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

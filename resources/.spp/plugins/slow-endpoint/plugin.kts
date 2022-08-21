@@ -2,15 +2,15 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
-import spp.indicator.LiveIndicator
+import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.model.DurationStep
 import spp.jetbrains.monitor.skywalking.model.TopNCondition
