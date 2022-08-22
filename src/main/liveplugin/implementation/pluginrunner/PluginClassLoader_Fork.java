@@ -10,10 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.ShutDownTracker;
-import com.intellij.util.lang.ClassPath;
-import com.intellij.util.lang.ClasspathCache;
-import com.intellij.util.lang.Resource;
-import com.intellij.util.lang.UrlClassLoader;
+import com.intellij.util.lang.*;
 import com.intellij.util.ui.EDT;
 import org.jetbrains.annotations.*;
 
@@ -390,6 +387,15 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
     private static boolean mustBeLoadedByPlatform(@NonNls String className) {
         if (className.startsWith("java.")) {
             return true;
+        }
+
+        //todo: understand why this is needed
+        if (className.equals("kotlin.coroutines.jvm.internal.ContinuationImpl")) {
+            try {
+                ClassLoader cl = Class.forName("kotlin.coroutines.jvm.internal.ContinuationImpl").getClassLoader();
+                return cl instanceof PathClassLoader;
+            } catch (Throwable ignore) {
+            }
         }
 
         // some commonly used classes from kotlin-runtime must be loaded by the platform classloader. Otherwise, if a plugin bundles its own version
