@@ -72,7 +72,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
                     log.info("Adding failing endpoint indicator for: $endpointName")
                     val gutterMark = ArtifactCreationService.createMethodGutterMark(
                         guideMark.sourceFileMarker,
-                        (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                        (guideMark as MethodSourceMark).getNameIdentifier(),
                         false
                     )
                     gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info

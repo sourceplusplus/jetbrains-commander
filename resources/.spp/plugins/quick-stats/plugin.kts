@@ -70,7 +70,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         val inlay = ApplicationManager.getApplication().runReadAction(Computable {
             ArtifactCreationService.createMethodInlayMark(
                 sourceMark.sourceFileMarker,
-                (sourceMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                (sourceMark as MethodSourceMark).getNameIdentifier(),
                 false
             )
         })

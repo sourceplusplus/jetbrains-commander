@@ -29,7 +29,7 @@ class EndpointLoadIndicator(project: Project) : LiveIndicator(project) {
             ApplicationManager.getApplication().runReadAction {
                 val gutterMark = ArtifactCreationService.createMethodGutterMark(
                     guideMark.sourceFileMarker,
-                    (guideMark as MethodSourceMark).getPsiElement().nameIdentifier!!,
+                    (guideMark as MethodSourceMark).getNameIdentifier(),
                     false
                 )
                 gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
