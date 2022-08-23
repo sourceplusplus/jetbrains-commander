@@ -4,7 +4,7 @@ import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.marker.source.mark.api.SourceMark
+import spp.jetbrains.command.LiveCommandLocation
 import spp.plugin.*
 
 class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
@@ -22,7 +22,7 @@ class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(sourceMark: SourceMark): Boolean {
+    override fun isAvailable(location: LiveCommandLocation): Boolean {
         return liveInstrumentService != null
     }
 }

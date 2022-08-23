@@ -5,9 +5,8 @@ import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.marker.source.mark.api.SourceMark
+import spp.jetbrains.command.LiveCommandLocation
 import spp.plugin.*
-import spp.protocol.artifact.ArtifactNameUtils
 
 class AddBreakpointCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_breakpoint")
@@ -22,9 +21,10 @@ class AddBreakpointCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(sourceMark: SourceMark): Boolean {
+    override fun isAvailable(location: LiveCommandLocation): Boolean {
         return liveInstrumentService != null
-                && ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
+                && location.insideFunction
+                && !location.insideInfiniteLoop
     }
 }
 

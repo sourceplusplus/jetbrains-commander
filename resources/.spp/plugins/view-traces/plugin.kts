@@ -4,12 +4,11 @@ import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveCommandLocation
 import spp.jetbrains.marker.source.info.EndpointDetector
-import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
 import spp.plugin.*
-import spp.protocol.artifact.ArtifactNameUtils
 
 /**
  * Opens the 'Endpoint-Traces' dashboard via portal popup.
@@ -32,8 +31,8 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(sourceMark: SourceMark): Boolean {
-        return ArtifactNameUtils.hasFunctionSignature(sourceMark.artifactQualifiedName)
+    override fun isAvailable(location: LiveCommandLocation): Boolean {
+        return location.insideFunction
     }
 }
 
