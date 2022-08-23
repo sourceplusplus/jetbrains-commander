@@ -1,10 +1,10 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveCommandLocation
 import spp.plugin.*
 
 class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
@@ -22,7 +22,7 @@ class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(location: LiveCommandLocation): Boolean {
+    override fun isAvailable(element: PsiElement): Boolean {
         return liveInstrumentService != null
     }
 }

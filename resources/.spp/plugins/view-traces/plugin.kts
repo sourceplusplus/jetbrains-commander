@@ -1,10 +1,11 @@
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveCommandLocation
+import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
@@ -31,8 +32,8 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(location: LiveCommandLocation): Boolean {
-        return location.insideFunction
+    override fun isAvailable(element: PsiElement): Boolean {
+        return ArtifactScopeService.isInsideFunction(element)
     }
 }
 

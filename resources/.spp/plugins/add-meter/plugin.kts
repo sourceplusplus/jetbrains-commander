@@ -1,11 +1,12 @@
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveCommandLocation
+import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
 
 class AddMeterCommand(project: Project) : LiveCommand(project) {
@@ -21,10 +22,10 @@ class AddMeterCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(location: LiveCommandLocation): Boolean {
+    override fun isAvailable(element: PsiElement): Boolean {
         return liveInstrumentService != null
-                && location.insideFunction
-                && !location.insideInfiniteLoop
+                && ArtifactScopeService.isInsideFunction(element)
+                && !ArtifactScopeService.isInsideEndlessLoop(element)
     }
 }
 
