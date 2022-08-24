@@ -10,6 +10,8 @@ import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
 import spp.plugin.*
+import spp.protocol.platform.auth.RolePermission
+import spp.protocol.platform.developer.SelfInfo
 
 /**
  * Opens the 'Endpoint-Traces' dashboard via portal popup.
@@ -32,7 +34,11 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(element: PsiElement): Boolean {
+    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
+        if (!selfInfo.permissions.contains(RolePermission.VIEW_TRACES)) {
+            return false
+        }
+
         return ArtifactScopeService.isInsideFunction(element)
     }
 }

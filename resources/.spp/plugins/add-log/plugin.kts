@@ -8,6 +8,8 @@ import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
+import spp.protocol.platform.auth.RolePermission
+import spp.protocol.platform.developer.SelfInfo
 
 class AddLogCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_log")
@@ -22,7 +24,11 @@ class AddLogCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(element: PsiElement): Boolean {
+    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
+        if (!selfInfo.permissions.contains(RolePermission.ADD_LIVE_LOG)) {
+            return false
+        }
+
         return liveInstrumentService != null
                 && ArtifactScopeService.isInsideFunction(element)
                 && !ArtifactScopeService.isInsideEndlessLoop(element)
