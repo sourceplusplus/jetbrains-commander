@@ -15,7 +15,7 @@ class PlatformStatsCommand(project: Project) : LiveCommand(project) {
             "Displays Source++ platform stats" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        liveService.getStats().onSuccess {
+        liveManagementService.getStats().onSuccess {
             val formattedStats = StringBuilder()
             formattedStats.append("Connected markers: ")
                 .append(it.getJsonObject("platform").getInteger("connected-markers")).append("\n")
