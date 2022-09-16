@@ -87,7 +87,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
                 val subscriptionId = it.result().subscriptionId!!
                 val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId))
                 consumer.handler {
-                    val liveViewEvent = Json.decodeValue(it.body().toString(), LiveViewEvent::class.java)
+                    val liveViewEvent = LiveViewEvent(it.body())
                     val rawMetrics = JsonObject(liveViewEvent.metricsData)
                     val logData = Json.decodeValue(rawMetrics.getJsonObject("log").toString(), Log::class.java)
                     virtualText.updateVirtualText(" [" + logData.arguments.joinToString(",") + "] @ " + logData.timestamp)

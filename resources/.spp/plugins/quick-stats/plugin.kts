@@ -3,7 +3,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.indicator.LiveIndicator
@@ -98,7 +97,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 val subscriptionId = it.result().subscriptionId!!
                 val previousMetrics = mutableMapOf<Long, String>()
                 vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId)) {
-                    val viewEvent = Json.decodeValue(it.body().toString(), LiveViewEvent::class.java)
+                    val viewEvent = LiveViewEvent(it.body())
                     consumeLiveEvent(viewEvent, previousMetrics)
 
                     val twoMinAgoValue = previousMetrics[viewEvent.timeBucket.toLong() - 2]
