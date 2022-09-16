@@ -81,7 +81,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
                     }
                     gutterMark.configuration.activateOnMouseHover = false
                     gutterMark.configuration.tooltipText = {
-                        "Top 20% highest load. Calls per minute: ${guideMark.getUserData(CPM)}ms"
+                        "Top 20% highest load. Calls per minute: ${guideMark.getUserData(CPM)}"
                     }
                     gutterMark.configuration.icon = findIcon("icons/high-load-endpoint.svg")
                     gutterMark.apply(true)
