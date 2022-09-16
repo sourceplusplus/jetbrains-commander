@@ -27,7 +27,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
-        private val RESP_TIME = SourceKey<Float>("SEI_RESP_TIME")
+        private val RESP_TIME = SourceKey<Float>(this::class.simpleName + "_RESP_TIME")
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
