@@ -21,6 +21,7 @@ import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.ceil
 
 class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
 
@@ -119,7 +120,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
                 service.name,
                 true,
                 Scope.Endpoint,
-                (skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //relative top 20%
+                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
                 Order.DES
             ), duration
         )
