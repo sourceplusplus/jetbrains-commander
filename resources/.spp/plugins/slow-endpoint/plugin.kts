@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
+import spp.jetbrains.marker.source.mark.api.ExpressionSourceMark
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
@@ -73,11 +74,11 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
                     log.info("Adding slow endpoint indicator for: $endpointName")
-                    val gutterMark = ArtifactCreationService.createMethodGutterMark(
-                        guideMark.sourceFileMarker,
-                        (guideMark as MethodSourceMark).getNameIdentifier(),
-                        false
-                    )
+                    val gutterMark = when (guideMark) {
+                        is MethodSourceMark -> ArtifactCreationService.createMethodGutterMark(guideMark, false)
+                        is ExpressionSourceMark -> ArtifactCreationService.createExpressionGutterMark(guideMark, false)
+                        else -> throw IllegalStateException("Guide mark is not a method or expression")
+                    }
                     gutterMark.configuration.activateOnMouseHover = false
                     gutterMark.configuration.tooltipText = {
                         "Top 20% slowest endpoint. Response time: ${guideMark.getUserData(RESP_TIME)}ms"
