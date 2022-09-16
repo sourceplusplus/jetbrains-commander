@@ -39,7 +39,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         //trigger adds
         currentHighLoads.forEach {
             val endpointName = it.getString("name")
-            val cpm = it.getString("value").toInt()
+            val cpm = it.getString("value").toFloat().toInt()
             val startIndicator = !highLoadEndpoints.containsKey(endpointName)
 
             log.debug("Endpoint $endpointName is high load. Calls per minute: $cpm")
