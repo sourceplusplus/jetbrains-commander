@@ -1,5 +1,4 @@
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
@@ -36,7 +35,6 @@ import java.time.temporal.ChronoUnit
  */
 class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
 
-    private val log = logger<QuickStatsIndicator>()
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
     private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
 

@@ -1,5 +1,4 @@
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
@@ -15,10 +14,6 @@ import spp.plugin.findIcon
 import spp.plugin.registerIndicator
 
 class UnusedEndpointIndicator(project: Project) : LiveIndicator(project) {
-
-    companion object {
-        private val log = logger<UnusedEndpointIndicator>()
-    }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
     private val unusedIndicators = mutableMapOf<GuideMark, GutterMark>()

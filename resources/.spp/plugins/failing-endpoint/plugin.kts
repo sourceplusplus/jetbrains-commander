@@ -1,5 +1,4 @@
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.indicator.LiveIndicator
@@ -25,7 +24,6 @@ import kotlin.math.ceil
 class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
 
     companion object {
-        private val log = logger<FailingEndpointIndicator>()
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
     }
