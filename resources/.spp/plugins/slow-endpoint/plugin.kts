@@ -31,8 +31,8 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
-    private val slowEndpoints = mutableMapOf<String, GuideMark>()
-    private val slowIndicators = mutableMapOf<GuideMark, GutterMark>()
+    private val slowEndpoints = hashMapOf<String, GuideMark>()
+    private val slowIndicators = hashMapOf<GuideMark, GutterMark>()
 
     override suspend fun refreshIndicator() {
         val currentSlowest = getTopSlowEndpoints()
@@ -85,9 +85,10 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
                     gutterMark.configuration.icon = findIcon("icons/slow-endpoint.svg")
                     gutterMark.apply(true)
                     slowIndicators[guideMark] = gutterMark
-                    gutterMark.addEventListener {
+
+                    guideMark.addEventListener {
                         if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                            gutterMark.triggerEvent(INDICATOR_STOPPED, listOf())
+                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf())
                         }
                     }
                 }
@@ -96,6 +97,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
             INDICATOR_STOPPED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
+                    slowEndpoints.remove(endpointName)
                     val gutterMark = slowIndicators.remove(guideMark) ?: return@runReadAction
                     log.info("Removing slow endpoint indicator for: $endpointName")
                     gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
