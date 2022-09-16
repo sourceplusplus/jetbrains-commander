@@ -45,6 +45,7 @@ class UnusedEndpointIndicator(project: Project) : LiveIndicator(project) {
                     else -> throw IllegalStateException("Guide mark is not a method or expression")
                 }
                 gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
+                gutterMark.configuration.tooltipText = { "No data found for endpoint: $endpointName" }
                 gutterMark.configuration.icon = findIcon("icons/unused-endpoint.svg")
                 gutterMark.apply(true)
                 unusedIndicators[guideMark] = gutterMark
