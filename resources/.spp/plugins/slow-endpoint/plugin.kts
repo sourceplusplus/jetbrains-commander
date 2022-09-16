@@ -9,6 +9,7 @@ import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
+import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.model.DurationStep
@@ -26,6 +27,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
+        private val RESP_TIME = SourceKey<Float>("SEI_RESP_TIME")
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
@@ -39,11 +41,14 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
         currentSlowest.forEach {
             val endpointName = it.getString("name")
             val respTime = it.getString("value").toFloat()
-            if (!slowEndpoints.containsKey(endpointName)) {
-                log.debug("Endpoint $endpointName is slow. Resp time: $respTime")
+            val startIndicator = !slowEndpoints.containsKey(endpointName)
 
-                findByEndpointName(endpointName)?.let { guideMark ->
-                    slowEndpoints[endpointName] = guideMark
+            log.debug("Endpoint $endpointName is slow. Resp time: $respTime")
+            findByEndpointName(endpointName)?.let { guideMark ->
+                slowEndpoints[endpointName] = guideMark
+                guideMark.putUserData(RESP_TIME, respTime)
+
+                if (startIndicator) {
                     guideMark.triggerEvent(INDICATOR_STARTED, listOf())
                 }
             }
@@ -73,7 +78,10 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
                         (guideMark as MethodSourceMark).getNameIdentifier(),
                         false
                     )
-                    gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
+                    gutterMark.configuration.activateOnMouseHover = false
+                    gutterMark.configuration.tooltipText = {
+                        "Top 2% slowest endpoint. Response time: ${guideMark.getUserData(RESP_TIME)}ms"
+                    }
                     gutterMark.configuration.icon = findIcon("icons/slow-endpoint.svg")
                     gutterMark.apply(true)
                     slowIndicators[guideMark] = gutterMark
