@@ -80,7 +80,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
                     )
                     gutterMark.configuration.activateOnMouseHover = false
                     gutterMark.configuration.tooltipText = {
-                        "Top 2% slowest endpoint. Response time: ${guideMark.getUserData(RESP_TIME)}ms"
+                        "Top 20% slowest endpoint. Response time: ${guideMark.getUserData(RESP_TIME)}ms"
                     }
                     gutterMark.configuration.icon = findIcon("icons/slow-endpoint.svg")
                     gutterMark.apply(true)
