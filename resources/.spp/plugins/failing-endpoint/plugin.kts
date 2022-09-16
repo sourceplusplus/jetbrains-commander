@@ -3,13 +3,14 @@ import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
+import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
+import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
-import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.model.DurationStep
 import spp.jetbrains.monitor.skywalking.model.TopNCondition
@@ -26,6 +27,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
+        private val SLA = SourceKey<Float>(this::class.simpleName + "_SLA")
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
@@ -38,12 +40,15 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         //trigger adds
         currentFailing.forEach {
             val endpointName = it.getString("name")
-            val sla = it.getString("value").toFloat()
-            if (!failingEndpoints.containsKey(endpointName)) {
-                log.debug("Endpoint $endpointName is failing. SLA: $sla")
+            val sla = it.getString("value").toFloat() / 100.0f
+            val startIndicator = !failingEndpoints.containsKey(endpointName)
 
-                findByEndpointName(endpointName)?.let { guideMark ->
-                    failingEndpoints[endpointName] = guideMark
+            log.debug("Endpoint $endpointName is failing. SLA: $sla")
+            findByEndpointName(endpointName)?.let { guideMark ->
+                failingEndpoints[endpointName] = guideMark
+                guideMark.putUserData(SLA, sla)
+
+                if (startIndicator) {
                     guideMark.triggerEvent(INDICATOR_STARTED, listOf())
                 }
             }
@@ -73,7 +78,10 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
                         (guideMark as MethodSourceMark).getNameIdentifier(),
                         false
                     )
-                    gutterMark.configuration.activateOnMouseHover = false //todo: show tooltip with extra info
+                    gutterMark.configuration.activateOnMouseHover = false
+                    gutterMark.configuration.tooltipText = {
+                        "Top 20% failing endpoint. SLA: ${guideMark.getUserData(SLA)}%"
+                    }
                     gutterMark.configuration.icon = findIcon("icons/failing-endpoint.svg")
                     gutterMark.apply(true)
                     failingIndicators[guideMark] = gutterMark
