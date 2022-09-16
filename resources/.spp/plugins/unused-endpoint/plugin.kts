@@ -16,7 +16,7 @@ import spp.plugin.registerIndicator
 class UnusedEndpointIndicator(project: Project) : LiveIndicator(project) {
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
-    private val unusedIndicators = mutableMapOf<GuideMark, GutterMark>()
+    private val unusedIndicators = hashMapOf<GuideMark, GutterMark>()
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.ENDPOINT_FOUND != event.params.firstOrNull()) {
@@ -44,6 +44,7 @@ class UnusedEndpointIndicator(project: Project) : LiveIndicator(project) {
                 gutterMark.configuration.icon = findIcon("icons/unused-endpoint.svg")
                 gutterMark.apply(true)
                 unusedIndicators[guideMark] = gutterMark
+
                 gutterMark.addEventListener {
                     if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
                         unusedIndicators.remove(guideMark)

@@ -93,7 +93,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         ).onComplete {
             if (it.succeeded()) {
                 val subscriptionId = it.result().subscriptionId!!
-                val previousMetrics = mutableMapOf<Long, String>()
+                val previousMetrics = hashMapOf<Long, String>()
                 vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId)) {
                     val viewEvent = LiveViewEvent(it.body())
                     consumeLiveEvent(viewEvent, previousMetrics)

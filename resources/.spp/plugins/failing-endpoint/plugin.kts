@@ -31,8 +31,8 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
-    private val failingEndpoints = mutableMapOf<String, GuideMark>()
-    private val failingIndicators = mutableMapOf<GuideMark, GutterMark>()
+    private val failingEndpoints = hashMapOf<String, GuideMark>()
+    private val failingIndicators = hashMapOf<GuideMark, GutterMark>()
 
     override suspend fun refreshIndicator() {
         val currentFailing = getTopFailingEndpoints()
@@ -85,9 +85,10 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
                     gutterMark.configuration.icon = findIcon("icons/failing-endpoint.svg")
                     gutterMark.apply(true)
                     failingIndicators[guideMark] = gutterMark
-                    gutterMark.addEventListener {
+
+                    guideMark.addEventListener {
                         if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                            gutterMark.triggerEvent(INDICATOR_STOPPED, listOf())
+                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf())
                         }
                     }
                 }
@@ -96,6 +97,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
             INDICATOR_STOPPED -> {
                 val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
                 ApplicationManager.getApplication().runReadAction {
+                    failingEndpoints.remove(endpointName)
                     val gutterMark = failingIndicators.remove(guideMark) ?: return@runReadAction
                     log.info("Removing failing endpoint indicator for: $endpointName")
                     gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
