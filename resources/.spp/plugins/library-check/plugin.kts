@@ -1,14 +1,17 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import io.vertx.core.json.JsonArray
 import liveplugin.PluginUtil.*
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
+import spp.protocol.platform.developer.SelfInfo
 
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
-    override val name = "library-check"
+    override val name = "Library Check"
     override val params: List<String> = listOf("Library Name") //todo: optional params
     override val description = "<html><span style=\"color: $commandTypeColor\">" +
             "Find all jar libraries used in the currently active services" + "</span></html>"
@@ -45,6 +48,10 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
             "Libraries Found (Services: $serviceCount - Instances: $instanceCount)",
             project
         )
+    }
+
+    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
+        return ArtifactScopeService.isJVM(element)
     }
 }
 
