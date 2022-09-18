@@ -19,6 +19,7 @@ import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
 import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -34,8 +35,10 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val failingEndpoints = hashMapOf<String, GuideMark>()
     private val failingIndicators = hashMapOf<GuideMark, GutterMark>()
+    private lateinit var skywalkingVersion: String
 
     override suspend fun refreshIndicator() {
+        skywalkingVersion = skywalkingMonitorService.getVersion()
         val currentFailing = getTopFailingEndpoints()
 
         //trigger adds
@@ -117,7 +120,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val failingEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
-                "endpoint_sla",
+                Endpoint_SLA.getMetricId(skywalkingVersion),
                 service.name,
                 true,
                 Scope.Endpoint,
