@@ -17,21 +17,18 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
-import spp.jetbrains.monitor.skywalking.model.DurationStep
-import spp.jetbrains.monitor.skywalking.model.GetEndpointMetrics
-import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
 import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
-import spp.protocol.artifact.metrics.ArtifactMetrics
 import spp.protocol.artifact.metrics.MetricType
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.utils.fromPerSecondToPrettyFrequency
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
 import spp.protocol.view.LiveViewSubscription
 import java.awt.Color
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 /**
  * Displays inlay marks with convenient metrics for a quick overview of the artifact.
@@ -53,20 +50,12 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
     private suspend fun displayQuickStatsInlay(sourceMark: SourceMark) {
         log.info("Displaying quick stats inlay on artifact: ${sourceMark.artifactQualifiedName.identifier}")
         val swVersion = skywalkingMonitorService.getVersion()
-        val listenMetrics = if (swVersion.startsWith("9")) {
-            listOf("endpoint_cpm", "endpoint_resp_time", "endpoint_sla")
-        } else {
-            listOf("endpoint_cpm", "endpoint_avg", "endpoint_sla")
-        }
-        val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
-        val startTime = endTime.minusMinutes(2)
-        val metricsRequest = GetEndpointMetrics(
-            listenMetrics,
-            sourceMark.getUserData(EndpointDetector.ENDPOINT_ID)!!,
-            ZonedDuration(startTime, endTime, DurationStep.MINUTE)
+        val listenMetrics = listOf(
+            Endpoint_CPM.asRealtime().getMetricId(swVersion),
+            Endpoint_RespTime.asRealtime().getMetricId(swVersion),
+            Endpoint_SLA.asRealtime().getMetricId(swVersion)
         )
 
-        val metrics = skywalkingMonitorService.getMetrics(metricsRequest)
         val inlay = ApplicationManager.getApplication().runReadAction(Computable {
             ArtifactCreationService.createMethodInlayMark(
                 sourceMark.sourceFileMarker,
@@ -74,7 +63,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 false
             )
         })
-        inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metrics))
+        inlay.configuration.virtualText = InlayMarkVirtualText(inlay, "")
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
         inlay.configuration.virtualText!!.relativeFontSize = true
         if (PluginBundle.LOCALE.language == "zh") {
@@ -99,15 +88,9 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         ).onComplete {
             if (it.succeeded()) {
                 val subscriptionId = it.result().subscriptionId!!
-                val previousMetrics = hashMapOf<Long, String>()
                 vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId)) {
                     val viewEvent = LiveViewEvent(it.body())
-                    consumeLiveEvent(viewEvent, previousMetrics)
-
-                    val twoMinAgoValue = previousMetrics[viewEvent.timeBucket.toLong() - 2]
-                    if (twoMinAgoValue != null) {
-                        inlay.configuration.virtualText!!.updateVirtualText(twoMinAgoValue)
-                    }
+                    inlay.configuration.virtualText!!.updateVirtualText(formatLiveEvent(viewEvent))
                 }
                 inlay.addEventListener {
                     if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
@@ -120,21 +103,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         }
     }
 
-    private fun formatMetricResult(artifactMetrics: List<ArtifactMetrics>): String {
-        val sb = StringBuilder()
-        val resp = artifactMetrics.find { it.metricType == MetricType.Throughput_Average }!!
-        val respValue = (resp.values.last() / 60.0).fromPerSecondToPrettyFrequency({ message(it) })
-        sb.append(message(resp.metricType.simpleName)).append(": ").append(respValue).append(" | ")
-        val cpm = artifactMetrics.find { it.metricType == MetricType.ResponseTime_Average }!!
-        sb.append(message(cpm.metricType.simpleName)).append(": ").append(cpm.values.last().toInt())
-            .append(message("ms")).append(" | ")
-        val sla = artifactMetrics.find { it.metricType == MetricType.ServiceLevelAgreement_Average }!!
-        sb.append(message(sla.metricType.simpleName)).append(": ").append(sla.values.last().toDouble() / 100.0)
-            .append("%")
-        return "$sb"
-    }
-
-    private fun consumeLiveEvent(event: LiveViewEvent, previousMetrics: MutableMap<Long, String>) {
+    private fun formatLiveEvent(event: LiveViewEvent): String {
         val metrics = JsonArray(event.metricsData)
         val sb = StringBuilder()
         for (i in 0 until metrics.size()) {
@@ -145,11 +114,11 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
             }
             if (value == null) value = metric.getNumber("value").toString()
 
-            val metricType = MetricType.realValueOf(metric.getJsonObject("meta").getString("metricsName"))
-            if (metricType == MetricType.Throughput_Average) {
+            val metricType = MetricType(metric.getJsonObject("meta").getString("metricsName"))
+            if (metricType.equalsIgnoringRealtime(Endpoint_CPM)) {
                 value = (metric.getNumber("value").toDouble() / 60.0).fromPerSecondToPrettyFrequency { message(it) }
             }
-            if (metricType == MetricType.ResponseTime_Average) {
+            if (metricType.equalsIgnoringRealtime(Endpoint_RespTime)) {
                 value += message("ms")
             }
             sb.append("${message(metricType.simpleName)}: $value")
@@ -157,7 +126,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 sb.append(" | ")
             }
         }
-        previousMetrics[event.timeBucket.toLong()] = "$sb"
+        return sb.toString()
     }
 }
 
