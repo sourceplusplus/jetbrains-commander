@@ -4,6 +4,9 @@ import com.intellij.openapi.util.Computable
 import com.intellij.ui.JBColor
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import spp.jetbrains.PluginBundle
+import spp.jetbrains.PluginBundle.message
+import spp.jetbrains.PluginUI
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.impl.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -73,12 +76,15 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         })
         inlay.configuration.virtualText = InlayMarkVirtualText(inlay, formatMetricResult(metrics))
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
-        inlay.configuration.virtualText!!.fontSize = -0.5f
         inlay.configuration.virtualText!!.relativeFontSize = true
-//        if (PluginBundle.LOCALE.language == "zh") {
-//            inlay.configuration.virtualText!!.font = PluginUI.MICROSOFT_YAHEI_PLAIN_14
-//            inlay.configuration.virtualText!!.xOffset = 15
-//        }
+        if (PluginBundle.LOCALE.language == "zh") {
+            inlay.configuration.virtualText!!.font = PluginUI.MICROSOFT_YAHEI_PLAIN_14
+            inlay.configuration.virtualText!!.xOffset = 20
+            inlay.configuration.virtualText!!.fontSize = -3.5f
+        } else {
+            inlay.configuration.virtualText!!.xOffset = 5
+            inlay.configuration.virtualText!!.fontSize = -1.5f
+        }
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
@@ -141,7 +147,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
 
             val metricType = MetricType.realValueOf(metric.getJsonObject("meta").getString("metricsName"))
             if (metricType == MetricType.Throughput_Average) {
-                value = (metric.getNumber("value").toDouble() / 60.0).fromPerSecondToPrettyFrequency({ message(it) })
+                value = (metric.getNumber("value").toDouble() / 60.0).fromPerSecondToPrettyFrequency { message(it) }
             }
             if (metricType == MetricType.ResponseTime_Average) {
                 value += message("ms")
@@ -152,10 +158,6 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
             }
         }
         previousMetrics[event.timeBucket.toLong()] = "$sb"
-    }
-
-    private fun message(message: String): String {
-        return message //todo: PluginBundle.message
     }
 }
 
