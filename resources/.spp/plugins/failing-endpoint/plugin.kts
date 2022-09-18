@@ -59,11 +59,12 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
 
         //trigger removes
-        failingEndpoints.toMap().forEach {
-            if (!currentFailing.map { it.getString("name") }.contains(it.key)) {
-                log.debug("Endpoint $it is no longer failing")
-                failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
-            }
+        val previousHighLoads = failingEndpoints.filter {
+            !currentFailing.map { it.getString("name") }.contains(it.key)
+        }
+        previousHighLoads.forEach {
+            log.debug("Endpoint $it is no longer failing")
+            failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
         }
     }
 

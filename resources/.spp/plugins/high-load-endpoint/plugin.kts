@@ -59,11 +59,12 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
 
         //trigger removes
-        highLoadEndpoints.toMap().forEach {
-            if (!currentHighLoads.map { it.getString("name") }.contains(it.key)) {
-                log.debug("Endpoint ${it.key} is no longer high load")
-                highLoadEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
-            }
+        val previousHighLoads = highLoadEndpoints.filter {
+            !currentHighLoads.map { it.getString("name") }.contains(it.key)
+        }
+        previousHighLoads.forEach {
+            log.debug("Endpoint ${it.key} is no longer high load")
+            highLoadEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
         }
     }
 
