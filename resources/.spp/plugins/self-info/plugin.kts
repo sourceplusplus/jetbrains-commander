@@ -12,7 +12,7 @@ import java.time.format.FormatStyle
 
 class SelfInfoCommand(project: Project) : LiveCommand(project) {
     override val name = "Self Info"
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             "Displays current developer information" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

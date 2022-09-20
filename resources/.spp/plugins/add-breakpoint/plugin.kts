@@ -13,7 +13,7 @@ import spp.protocol.platform.developer.SelfInfo
 
 class AddBreakpointCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_breakpoint")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
             ": </span><span style=\"color: $commandHighlightColor\">" + message("on_line") +
             " *lineNumber*</span></html>"

@@ -11,7 +11,7 @@ import java.time.format.FormatStyle
 
 class PlatformStatsCommand(project: Project) : LiveCommand(project) {
     override val name = "Platform Stats"
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             "Displays Source++ platform stats" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

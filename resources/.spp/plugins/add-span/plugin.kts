@@ -13,7 +13,7 @@ import spp.protocol.platform.developer.SelfInfo
 
 class AddSpanCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_span")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_instrument") + " ➛ " + message("add") + " ➛ " + message("location") +
             ": </span><span style=\"color: $commandHighlightColor\">" + message("on_method") +
             " *methodName*</span></html>"

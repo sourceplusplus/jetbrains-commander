@@ -14,9 +14,9 @@ import spp.plugin.*
 
 class NewIndicatorCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Indicator")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
-            "Add new custom live indicator" + "</span></html>"
     override val params: List<String> = listOf("Indicator Name")
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
+            "Add new custom live indicator" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
         if (context.args.isEmpty()) {

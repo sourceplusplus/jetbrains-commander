@@ -11,7 +11,7 @@ import spp.protocol.platform.developer.SelfInfo
 
 class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
     override val name = "Clear Instruments"
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_instrument") + " ➛ " + message("clear_all") + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

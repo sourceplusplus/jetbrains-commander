@@ -14,9 +14,9 @@ import spp.plugin.*
 
 class NewCommandCommand(project: Project) : LiveCommand(project) {
     override val name = message("New Command")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
-            "Add new custom live command" + "</span></html>"
     override val params: List<String> = listOf("Command Name")
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
+            "Add new custom live command" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
         if (context.args.isEmpty()) {
@@ -48,7 +48,7 @@ class NewCommandCommand(project: Project) : LiveCommand(project) {
 
             class ${properCommandName}Command(project: Project) : LiveCommand(project) {
                 override val name = "$commandName"
-                override val description = "<html><span style=\"color: ${'$'}commandTypeColor\">" +
+                override fun getDescription(): String = "<html><span style=\"color: ${'$'}commandTypeColor\">" +
                         "My custom live command" + "</span></html>"
 
                 override fun trigger(context: LiveCommandContext) {

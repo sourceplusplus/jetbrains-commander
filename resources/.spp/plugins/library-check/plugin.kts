@@ -13,7 +13,7 @@ import spp.protocol.platform.developer.SelfInfo
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
     override val name = "Library Check"
     override val params: List<String> = listOf("Library Name") //todo: optional params
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             "Find all jar libraries used in the currently active services" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

@@ -18,7 +18,7 @@ import spp.protocol.platform.developer.SelfInfo
  */
 class ViewTracesCommand(project: Project) : LiveCommand(project) {
     override val name = message("view_traces")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("traces") + " ➛ " + message("scope") +
             ": </span><span style=\"color: $commandHighlightColor\">" + message("method") +
             "</span></html>"

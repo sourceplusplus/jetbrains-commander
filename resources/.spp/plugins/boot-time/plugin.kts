@@ -8,9 +8,8 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 class BootTimeCommand(project: Project) : LiveCommand(project) {
-
     override val name = "Boot Time"
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             "Gets the earliest boot time for the current service" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
