@@ -77,7 +77,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
-        liveViewService.addLiveViewSubscription(
+        viewService.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
                 listOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
@@ -94,7 +94,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 }
                 inlay.addEventListener {
                     if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                        liveViewService.removeLiveViewSubscription(subscriptionId)
+                        viewService.removeLiveViewSubscription(subscriptionId)
                     }
                 }
             } else {

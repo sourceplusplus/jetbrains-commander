@@ -58,7 +58,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
             detectedLog.lineLocation,
             false
         )
-        liveViewService.addLiveViewSubscription(
+        viewService.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
                 listOf(detectedLog.logPattern),
@@ -94,7 +94,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
                 }
                 inlayMark.addEventListener { event ->
                     if (event.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                        liveViewService.removeLiveViewSubscription(subscriptionId)
+                        viewService.removeLiveViewSubscription(subscriptionId)
                         consumer.unregister()
                     }
                 }
