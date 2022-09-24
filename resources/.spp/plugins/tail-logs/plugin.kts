@@ -102,7 +102,7 @@ class TailLogsCommand(
                 val logLine = buildString {
                     append(localTime)
                     append(" [").append(rawLog.thread).append("] ")
-                    append(rawLog.level).append(" - ")
+                    append(rawLog.level.uppercase()).append(" - ")
                     rawLog.logger?.let { append(ArtifactNameUtils.getShortQualifiedClassName(it)).append(" - ") }
                     append(rawLog.toFormattedMessage())
                     appendLine()
