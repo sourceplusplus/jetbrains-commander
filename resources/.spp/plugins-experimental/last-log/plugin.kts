@@ -61,7 +61,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
         viewService.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
-                listOf(detectedLog.logPattern),
+                mutableSetOf(detectedLog.logPattern),
                 ArtifactQualifiedName(
                     inlayMark.artifactQualifiedName.identifier,
                     lineNumber = inlayMark.artifactQualifiedName.lineNumber,

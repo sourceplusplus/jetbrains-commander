@@ -80,7 +80,7 @@ class TailLogsCommand(
 
         viewService.addLiveViewSubscription(
             LiveViewSubscription(
-                entityIds = loggerStatements.map { it.logPattern },
+                entityIds = loggerStatements.map { it.logPattern }.toMutableSet(),
                 liveViewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs"))
             )
         ).onSuccess { sub ->

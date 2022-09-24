@@ -80,7 +80,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         viewService.addLiveViewSubscription(
             LiveViewSubscription(
                 null,
-                listOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
+                mutableSetOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
                 sourceMark.artifactQualifiedName,
                 LiveSourceLocation(sourceMark.artifactQualifiedName.identifier, 0), //todo: don't need
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)
