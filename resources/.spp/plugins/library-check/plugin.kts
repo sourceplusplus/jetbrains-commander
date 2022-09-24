@@ -1,11 +1,11 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import io.vertx.core.json.JsonArray
 import liveplugin.PluginUtil.*
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
 import spp.protocol.platform.developer.SelfInfo
@@ -50,8 +50,8 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
         )
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
-        return ArtifactScopeService.isJVM(element)
+    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+        return ArtifactScopeService.isJVM(context.element)
     }
 }
 

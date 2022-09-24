@@ -1,11 +1,11 @@
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
@@ -20,18 +20,18 @@ class AddBreakpointCommand(project: Project) : LiveCommand(project) {
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {
-            liveStatusManager.showBreakpointStatusBar(project.currentEditor!!, context.lineNumber)
+            statusManager.showBreakpointStatusBar(project.currentEditor!!, context.lineNumber)
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
+    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.ADD_LIVE_BREAKPOINT)) {
             return false
         }
 
-        return liveInstrumentService != null
-                && ArtifactScopeService.isInsideFunction(element)
-                && !ArtifactScopeService.isInsideEndlessLoop(element)
+        return instrumentService != null
+                && ArtifactScopeService.isInsideFunction(context.element)
+                && !ArtifactScopeService.isInsideEndlessLoop(context.element)
     }
 }
 

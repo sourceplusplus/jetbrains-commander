@@ -1,10 +1,10 @@
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
@@ -34,12 +34,12 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, element: PsiElement): Boolean {
+    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.VIEW_ACTIVITY)) {
             return false
         }
 
-        return ArtifactScopeService.isInsideFunction(element)
+        return ArtifactScopeService.isInsideFunction(context.element)
     }
 }
 

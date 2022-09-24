@@ -16,7 +16,7 @@ class SelfInfoCommand(project: Project) : LiveCommand(project) {
             "Displays current developer information" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        liveManagementService.getSelf().onSuccess {
+        managementService.getSelf().onSuccess {
             val formattedSelfInfo = StringBuilder()
             formattedSelfInfo.append("Developer:").append(" ").append(it.developer.id).appendLine()
             if (it.roles.isNotEmpty()) {

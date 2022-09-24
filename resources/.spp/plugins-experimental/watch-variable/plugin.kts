@@ -7,8 +7,8 @@ import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactCreationService
-import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.plugin.*
@@ -21,11 +21,12 @@ import spp.protocol.instrument.event.LiveInstrumentEventType.BREAKPOINT_HIT
 import spp.protocol.instrument.throttle.InstrumentThrottle
 import spp.protocol.instrument.throttle.ThrottleStep.SECOND
 import spp.protocol.marshall.ProtocolMarshaller.deserializeLiveBreakpointHit
+import spp.protocol.platform.developer.SelfInfo
 import java.awt.Color
 
 class WatchVariableCommand(project: Project) : LiveCommand(project) {
     override val name = "watch-variable"
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             "Adds live breakpoint to display the variable's current value" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
@@ -34,9 +35,9 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
             show("Unable to determine variable name", notificationType = ERROR)
             return
         }
-        val selfId = liveManagementService.getSelf().await().developer.id
+        val selfId = managementService.getSelf().await().developer.id
 
-        liveInstrumentService!!.addLiveInstrument(
+        instrumentService!!.addLiveInstrument(
             LiveBreakpoint(
                 LiveSourceLocation(
                     ArtifactNameUtils.getQualifiedClassName(context.artifactQualifiedName.identifier)!!,
@@ -67,7 +68,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         inlay.addEventListener {
             if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
                 show("Removed live instrument for watched variable: $variableName")
-                liveInstrumentService!!.removeLiveInstrument(instrumentId)
+                instrumentService!!.removeLiveInstrument(instrumentId)
                 consumer.unregister()
             }
         }
@@ -87,8 +88,8 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(sourceMark: SourceMark): Boolean {
-        return liveInstrumentService != null
+    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+        return instrumentService != null
     }
 }
 
