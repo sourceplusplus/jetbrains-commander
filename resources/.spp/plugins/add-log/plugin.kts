@@ -20,7 +20,7 @@ class AddLogCommand(project: Project) : LiveCommand(project) {
 
     override fun trigger(context: LiveCommandContext) {
         runWriteAction {
-            statusManager.showLogStatusBar(project.currentEditor!!, context.lineNumber, false)
+            statusManager.showLogStatusBar(project.currentEditor!!, context.lineNumber)
         }
     }
 
