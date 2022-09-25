@@ -1,6 +1,7 @@
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
+import com.intellij.util.containers.isNullOrEmpty
 import io.vertx.core.json.JsonObject
 import liveplugin.PluginUtil.showInConsole
 import spp.jetbrains.PluginBundle.message
@@ -11,7 +12,7 @@ import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.source.info.LoggerDetector.Companion.DETECTED_LOGGER
-import spp.jetbrains.marker.source.info.LoggerDetector.Companion.LOGGER_STATEMENTS
+import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.CHILD_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.ClassGuideMark
 import spp.jetbrains.marker.source.mark.guide.ExpressionGuideMark
 import spp.jetbrains.marker.source.mark.guide.GuideMark
@@ -72,11 +73,10 @@ class TailLogsCommand(
     override fun trigger(context: LiveCommandContext) {
         val guideMark = getLoggerGuideMark(context.fileMarker.project, context.artifactQualifiedName)!!
         val loggerStatements = when (guideMark) {
-            is ClassGuideMark -> guideMark.getChildren().flatMap { it.getUserData(LOGGER_STATEMENTS) ?: emptyList() }
-            is MethodGuideMark -> guideMark.getUserData(LOGGER_STATEMENTS)!!
             is ExpressionGuideMark -> listOf(guideMark.getUserData(DETECTED_LOGGER)!!)
-            else -> error("Unexpected guide mark type: $guideMark")
+            else -> guideMark.getChildren().mapNotNull { it.getUserData(DETECTED_LOGGER) }
         }
+        log.info("Tailing logs for statements: ${loggerStatements.map { it.logPattern }}")
 
         viewService.addLiveViewSubscription(
             LiveViewSubscription(
@@ -84,6 +84,21 @@ class TailLogsCommand(
                 liveViewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs"))
             )
         ).onSuccess { sub ->
+            if (guideMark !is ExpressionGuideMark) {
+                guideMark.addEventListener {
+                    if (it.eventCode == CHILD_USER_DATA_UPDATED && DETECTED_LOGGER == it.params.firstOrNull()) {
+                        val updatedLogPatterns = guideMark.getChildren().mapNotNull { it.getUserData(DETECTED_LOGGER) }
+                            .map { it.logPattern }.toMutableSet()
+                        log.info("Updating tailed log patterns to: $updatedLogPatterns")
+
+                        viewService.updateLiveViewSubscription(
+                            sub.subscriptionId!!,
+                            sub.copy(entityIds = updatedLogPatterns)
+                        )
+                    }
+                }
+            }
+
             val console = showInConsole(
                 "",
                 "Logs: " + ArtifactNameUtils.removePackageAndClassName(guideMark.artifactQualifiedName.identifier),
@@ -136,12 +151,12 @@ class TailLogsCommand(
             if (qualifiedName == null) continue
             guideMark = SourceMarker.getInstance(project).getGuideMark(qualifiedName)
 
-            if (guideMark is ExpressionGuideMark && guideMark.getUserData(DETECTED_LOGGER) == null) {
-                guideMark = null
-            } else if (guideMark is MethodGuideMark && guideMark.getUserData(LOGGER_STATEMENTS).isNullOrEmpty()) {
-                guideMark = null
-            } else if (guideMark is ClassGuideMark) {
-                if (guideMark.getChildren().flatMap { it.getUserData(LOGGER_STATEMENTS) ?: emptyList() }.isEmpty()) {
+            if (guideMark is ExpressionGuideMark) {
+                if (guideMark.getUserData(DETECTED_LOGGER) == null) {
+                    guideMark = null
+                }
+            } else {
+                if (guideMark?.getChildren()?.mapNotNull { it.getUserData(DETECTED_LOGGER) }.isNullOrEmpty()) {
                     guideMark = null
                 }
             }
