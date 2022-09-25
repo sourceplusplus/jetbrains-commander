@@ -14,7 +14,7 @@ import spp.plugin.*
  */
 class ViewOverviewCommand(project: Project) : LiveCommand(project) {
     override val name = message("view_overview")
-    override val description = "<html><span style=\"color: $commandTypeColor\">" +
+    override fun getDescription() = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("overview") + " ➛ " + message("scope") +
             ": </span><span style=\"color: $commandHighlightColor\">" + message("class") +
             "</span></html>"
