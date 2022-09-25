@@ -1,5 +1,7 @@
+import com.intellij.codeInsight.lookup.impl.LookupCellRenderer
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.isNullOrEmpty
 import io.vertx.core.json.JsonObject
@@ -28,6 +30,7 @@ import spp.protocol.platform.developer.SelfInfo
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
 import spp.protocol.view.LiveViewSubscription
+import java.awt.Font
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -39,6 +42,13 @@ class TailLogsCommand(
     project: Project,
     override val name: String = "Tail Logs"
 ) : LiveCommand(project) {
+
+    private val liveOutputType = ConsoleViewContentType(
+        "LIVE_OUTPUT",
+        TextAttributes(
+            LookupCellRenderer.MATCHED_FOREGROUND_COLOR, null, null, null, Font.PLAIN
+        )
+    )
 
     override fun getDescription(context: LiveLocationContext): String {
         return when (val guideMark = getLoggerGuideMark(context.fileMarker.project, context.qualifiedName)) {
@@ -123,10 +133,10 @@ class TailLogsCommand(
                     appendLine()
                 }
 
-                if (rawLog.level == "WARN" || rawLog.level == "ERROR") {
-                    console.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
-                } else {
-                    console.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
+                when (rawLog.level.uppercase()) {
+                    "LIVE" -> console.print(logLine, liveOutputType)
+                    "WARN", "ERROR" -> console.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
+                    else -> console.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
                 }
             }
 
