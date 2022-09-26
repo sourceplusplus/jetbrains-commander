@@ -7,7 +7,6 @@ import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
-import spp.protocol.platform.developer.SelfInfo
 
 class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
     override val name = "Clear Instruments"
@@ -24,7 +23,7 @@ class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.CLEAR_ALL_LIVE_INSTRUMENTS)) {
             return false //todo: clearing instruments should just need remove permission
         }

@@ -35,7 +35,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
             show("Unable to determine variable name", notificationType = ERROR)
             return
         }
-        val selfId = managementService.getSelf().await().developer.id
+        val selfId = selfInfo.developer.id
 
         instrumentService!!.addLiveInstrument(
             LiveBreakpoint(

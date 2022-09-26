@@ -1,4 +1,3 @@
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import liveplugin.PluginUtil.showInConsole
 import liveplugin.implementation.Console
@@ -16,41 +15,37 @@ class SelfInfoCommand(project: Project) : LiveCommand(project) {
             "Displays current developer information" + "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        managementService.getSelf().onSuccess {
-            val formattedSelfInfo = StringBuilder()
-            formattedSelfInfo.append("Developer:").append(" ").append(it.developer.id).appendLine()
-            if (it.roles.isNotEmpty()) {
-                formattedSelfInfo.append("Roles:")
-                it.roles.sortedBy { it.roleName }.forEach {
-                    formattedSelfInfo.appendLine().append(" - ").append(it.roleName)
-                }
+        val formattedSelfInfo = StringBuilder()
+        formattedSelfInfo.append("Developer:").append(" ").append(selfInfo.developer.id).appendLine()
+        if (selfInfo.roles.isNotEmpty()) {
+            formattedSelfInfo.append("Roles:")
+            selfInfo.roles.sortedBy { it.roleName }.forEach {
+                formattedSelfInfo.appendLine().append(" - ").append(it.roleName)
             }
-
-            if (it.permissions.isNotEmpty()) {
-                formattedSelfInfo.appendLine().append("Permissions:")
-                it.permissions.sortedBy { it.name }.forEach {
-                    formattedSelfInfo.appendLine().append(" - ").append(it.name)
-                }
-            }
-
-            if (it.access.isNotEmpty()) {
-                formattedSelfInfo.appendLine().append("Access:")
-                it.access.sortedBy { it.id }.forEach {
-                    formattedSelfInfo.appendLine().append(" - ").append(it)
-                }
-            }
-
-            val localTime = LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
-            showInConsole(
-                formattedSelfInfo,
-                "Self Info - $localTime",
-                project,
-                Console.guessContentTypeOf(formattedSelfInfo),
-                0
-            )
-        }.onFailure {
-            show(it.message, "Error", NotificationType.ERROR)
         }
+
+        if (selfInfo.permissions.isNotEmpty()) {
+            formattedSelfInfo.appendLine().append("Permissions:")
+            selfInfo.permissions.sortedBy { it.name }.forEach {
+                formattedSelfInfo.appendLine().append(" - ").append(it.name)
+            }
+        }
+
+        if (selfInfo.access.isNotEmpty()) {
+            formattedSelfInfo.appendLine().append("Access:")
+            selfInfo.access.sortedBy { it.id }.forEach {
+                formattedSelfInfo.appendLine().append(" - ").append(it)
+            }
+        }
+
+        val localTime = LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+        showInConsole(
+            formattedSelfInfo,
+            "Self Info - $localTime",
+            project,
+            Console.guessContentTypeOf(formattedSelfInfo),
+            0
+        )
     }
 }
 

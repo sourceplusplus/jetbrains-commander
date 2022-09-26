@@ -26,7 +26,6 @@ import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.log.Log
-import spp.protocol.platform.developer.SelfInfo
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
 import spp.protocol.view.LiveViewSubscription
@@ -150,7 +149,7 @@ class TailLogsCommand(
     }
 
     //todo: ability to dynamically recheck isAvailable while control bar is open
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         return getLoggerGuideMark(context.fileMarker.project, context.qualifiedName) != null
     }
 

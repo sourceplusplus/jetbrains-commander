@@ -11,7 +11,6 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPE
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
-import spp.protocol.platform.developer.SelfInfo
 
 /**
  * Opens the 'Endpoint-Traces' dashboard via portal popup.
@@ -34,7 +33,7 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.VIEW_TRACES)) {
             return false
         }

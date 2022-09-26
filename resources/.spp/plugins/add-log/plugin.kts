@@ -9,7 +9,6 @@ import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
-import spp.protocol.platform.developer.SelfInfo
 
 class AddLogCommand(project: Project) : LiveCommand(project) {
     override val name = message("add_log")
@@ -24,7 +23,7 @@ class AddLogCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.ADD_LIVE_LOG)) {
             return false
         }

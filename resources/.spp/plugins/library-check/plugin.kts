@@ -8,7 +8,6 @@ import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.impl.ArtifactScopeService
 import spp.plugin.*
-import spp.protocol.platform.developer.SelfInfo
 
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
     override val name = "Library Check"
@@ -50,7 +49,7 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
         )
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         return ArtifactScopeService.isJVM(context.element)
     }
 }
