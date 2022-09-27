@@ -2,6 +2,7 @@ import com.intellij.openapi.project.Project
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.sourcemarker.mark.SourceMarkKeys
 import spp.plugin.*
@@ -59,6 +60,12 @@ class ShowHideMetersCommand(
         SourceMarker.getInstance(context.project).getGutterMarks().filter {
             it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
         }.forEach { it.setVisible(currentVisibility) }
+    }
+
+    override fun isAvailable(context: LiveLocationContext): Boolean {
+        return SourceMarker.getInstance(context.project).getGutterMarks().any {
+            it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
+        }
     }
 }
 
