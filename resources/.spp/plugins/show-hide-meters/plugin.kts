@@ -57,13 +57,13 @@ class ShowHideMetersCommand(
     override fun trigger(context: LiveCommandContext) {
         currentVisibility = !currentVisibility
 
-        SourceMarker.getInstance(context.project).getGutterMarks().filter {
+        SourceMarker.getInstance(project).getGutterMarks().filter {
             it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
         }.forEach { it.setVisible(currentVisibility) }
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
-        return SourceMarker.getInstance(context.project).getGutterMarks().any {
+        return SourceMarker.getInstance(project).getGutterMarks().any {
             it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
         }
     }
