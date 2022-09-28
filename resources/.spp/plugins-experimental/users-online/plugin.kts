@@ -105,7 +105,7 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
                     latestLoginGaugeMeter.toMetricId(),
                     onlineGaugeMeter.toMetricId()
                 ),
-                liveViewConfig = LiveViewConfig(
+                viewConfig = LiveViewConfig(
                     "users-online-indicator",
                     listOf(
                         logInCountMeter.toMetricId(),
