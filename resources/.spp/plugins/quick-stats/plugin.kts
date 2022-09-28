@@ -18,16 +18,16 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.plugin.*
-import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
+import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.metrics.MetricType
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.utils.fromPerSecondToPrettyFrequency
+import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import spp.protocol.view.LiveViewSubscription
 import java.awt.Color
 
 /**
@@ -77,8 +77,8 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
-        viewService.addLiveViewSubscription(
-            LiveViewSubscription(
+        viewService.addLiveView(
+            LiveView(
                 null,
                 mutableSetOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
                 sourceMark.artifactQualifiedName,
@@ -94,7 +94,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 }
                 inlay.addEventListener {
                     if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                        viewService.removeLiveViewSubscription(subscriptionId)
+                        viewService.removeLiveView(subscriptionId)
                     }
                 }
             } else {

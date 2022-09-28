@@ -22,16 +22,16 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.plugin.*
-import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
+import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactType
 import spp.protocol.instrument.LiveMeter
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.instrument.meter.MeterType
 import spp.protocol.instrument.meter.MetricValue
 import spp.protocol.instrument.meter.MetricValueType
+import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import spp.protocol.view.LiveViewSubscription
 import java.awt.Dimension
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JLabel
@@ -45,7 +45,7 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
     private val usersLoggedIn = AtomicReference<String>("n/a")
     private val latestUsernameGauge = AtomicReference<String>("n/a")
     private val usersOnlineGauge = AtomicReference<String>("n/a")
-    private lateinit var usersOnlineSubscription: LiveViewSubscription
+    private lateinit var usersOnlineSubscription: LiveView
     private val demoUserClassname = "spp.example.webapp.demo.UsersOnlineIndicator\$DemoUser"
 
     //todo: dynamic LiveSourceLocations
@@ -98,8 +98,8 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
         }
 
         //subscribe to users online meters
-        usersOnlineSubscription = viewService.addLiveViewSubscription(
-            LiveViewSubscription(
+        usersOnlineSubscription = viewService.addLiveView(
+            LiveView(
                 entityIds = mutableSetOf(
                     logInCountMeter.toMetricId(),
                     latestLoginGaugeMeter.toMetricId(),

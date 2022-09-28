@@ -15,14 +15,14 @@ import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.jetbrains.sourcemarker.mark.SourceMarkKeys
 import spp.plugin.*
-import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
+import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.ArtifactType
 import spp.protocol.artifact.log.Log
 import spp.protocol.instrument.LiveSourceLocation
+import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import spp.protocol.view.LiveViewSubscription
 import java.awt.Color
 
 class LastLogIndicator(project: Project) : LiveIndicator(project) {
@@ -58,8 +58,8 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
             detectedLog.lineLocation,
             false
         )
-        viewService.addLiveViewSubscription(
-            LiveViewSubscription(
+        viewService.addLiveView(
+            LiveView(
                 null,
                 mutableSetOf(detectedLog.logPattern),
                 ArtifactQualifiedName(
@@ -94,7 +94,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
                 }
                 inlayMark.addEventListener { event ->
                     if (event.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                        viewService.removeLiveViewSubscription(subscriptionId)
+                        viewService.removeLiveView(subscriptionId)
                         consumer.unregister()
                     }
                 }

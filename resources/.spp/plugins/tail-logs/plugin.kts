@@ -22,13 +22,13 @@ import spp.jetbrains.marker.source.mark.guide.MethodGuideMark
 import spp.plugin.registerCommand
 import spp.plugin.show
 import spp.plugin.whenDisposed
-import spp.protocol.SourceServices.Provide.toLiveViewSubscriberAddress
+import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.log.Log
+import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import spp.protocol.view.LiveViewSubscription
 import java.awt.Font
 import java.time.LocalTime
 import java.time.ZoneId
@@ -87,8 +87,8 @@ class TailLogsCommand(
         }
         log.info("Tailing logs for statements: ${loggerStatements.map { it.logPattern }}")
 
-        viewService.addLiveViewSubscription(
-            LiveViewSubscription(
+        viewService.addLiveView(
+            LiveView(
                 entityIds = loggerStatements.map { it.logPattern }.toMutableSet(),
                 liveViewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs"))
             )
@@ -100,7 +100,7 @@ class TailLogsCommand(
                             .map { it.logPattern }.toMutableSet()
                         log.info("Updating tailed log patterns to: $updatedLogPatterns")
 
-                        viewService.updateLiveViewSubscription(
+                        viewService.updateLiveView(
                             sub.subscriptionId!!,
                             sub.copy(entityIds = updatedLogPatterns)
                         )
@@ -141,7 +141,7 @@ class TailLogsCommand(
 
             console.whenDisposed {
                 consumer.unregister()
-                viewService.removeLiveViewSubscription(sub.subscriptionId!!)
+                viewService.removeLiveView(sub.subscriptionId!!)
             }
         }.onFailure {
             show(it.message, notificationType = NotificationType.ERROR)
