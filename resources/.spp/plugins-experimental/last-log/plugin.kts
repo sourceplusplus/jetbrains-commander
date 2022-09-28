@@ -99,7 +99,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
                     }
                 }
             } else {
-                log.error("Failed to add live view subscription", it.cause())
+                log.error("Failed to add live view", it.cause())
             }
         }
     }
