@@ -42,9 +42,9 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
 
     override val listenForEvents = listOf(SourceMarkEventCode.MARK_ADDED)
     private val USER_REFERENCE: SourceKey<Boolean> = SourceKey("USER_REFERENCE")
-    private val usersLoggedIn = AtomicReference<String>("n/a")
-    private val latestUsernameGauge = AtomicReference<String>("n/a")
-    private val usersOnlineGauge = AtomicReference<String>("n/a")
+    private val usersLoggedIn = AtomicReference("n/a")
+    private val latestUsernameGauge = AtomicReference("n/a")
+    private val usersOnlineGauge = AtomicReference("n/a")
     private lateinit var usersOnlineSubscription: LiveView
     private val demoUserClassname = "spp.example.webapp.demo.UsersOnlineIndicator\$DemoUser"
 
