@@ -38,7 +38,7 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
             return false
         }
 
-        return ArtifactScopeService.isInsideFunction(context.element)
+        return ArtifactScopeService.isOnOrInsideFunction(context.qualifiedName, context.element)
     }
 }
 
