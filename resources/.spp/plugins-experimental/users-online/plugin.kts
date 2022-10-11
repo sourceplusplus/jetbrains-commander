@@ -12,9 +12,9 @@ import net.miginfocom.swing.MigLayout
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.AbstractSourceGuideProvider
 import spp.jetbrains.marker.SourceMarkerUtils
-import spp.jetbrains.marker.impl.ArtifactNamingService
-import spp.jetbrains.marker.impl.ArtifactTypeService
-import spp.jetbrains.marker.impl.SourceGuideProvider
+import spp.jetbrains.marker.service.ArtifactNamingService
+import spp.jetbrains.marker.service.ArtifactTypeService
+import spp.jetbrains.marker.service.SourceGuideProvider
 import spp.jetbrains.marker.source.SourceFileMarker
 import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent

@@ -8,7 +8,7 @@ import spp.jetbrains.PluginBundle
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI
 import spp.jetbrains.indicator.LiveIndicator
-import spp.jetbrains.marker.impl.ArtifactCreationService
+import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.SourceMark

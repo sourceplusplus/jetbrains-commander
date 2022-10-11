@@ -5,7 +5,7 @@ import com.intellij.ui.JBColor
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.indicator.LiveIndicator
-import spp.jetbrains.marker.impl.ArtifactCreationService
+import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.jvm.psi.LoggerDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
