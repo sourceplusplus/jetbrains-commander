@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.await
 import net.miginfocom.swing.MigLayout
 import spp.jetbrains.indicator.LiveIndicator
-import spp.jetbrains.marker.AbstractSourceGuideProvider
+import spp.jetbrains.marker.service.define.AbstractSourceGuideProvider
 import spp.jetbrains.marker.SourceMarkerUtils
 import spp.jetbrains.marker.service.ArtifactNamingService
 import spp.jetbrains.marker.service.ArtifactTypeService

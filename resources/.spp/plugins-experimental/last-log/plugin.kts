@@ -13,7 +13,7 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
-import spp.jetbrains.sourcemarker.mark.SourceMarkKeys
+import spp.jetbrains.marker.SourceMarkerKeys
 import spp.plugin.*
 import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactQualifiedName
@@ -34,7 +34,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
-        if (event.eventCode == MARK_USER_DATA_UPDATED && SourceMarkKeys.LOGGER_DETECTOR == event.params.firstOrNull()) {
+        if (event.eventCode == MARK_USER_DATA_UPDATED && SourceMarkerKeys.LOGGER_DETECTOR == event.params.firstOrNull()) {
             val loggerDetector = event.params.get(1) as LoggerDetector
             if (guideMark is MethodSourceMark) {
                 loggerDetector.getOrFindLoggerStatements(guideMark)

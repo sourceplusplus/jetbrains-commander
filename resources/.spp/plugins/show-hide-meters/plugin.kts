@@ -4,7 +4,7 @@ import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.SourceMarker
-import spp.jetbrains.sourcemarker.mark.SourceMarkKeys
+import spp.jetbrains.marker.SourceMarkerKeys
 import spp.plugin.*
 import spp.protocol.instrument.LiveInstrumentType
 import javax.swing.Icon
@@ -58,13 +58,13 @@ class ShowHideMetersCommand(
         currentVisibility = !currentVisibility
 
         SourceMarker.getInstance(project).getGutterMarks().filter {
-            it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
+            it.getUserData(SourceMarkerKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
         }.forEach { it.setVisible(currentVisibility) }
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
         return SourceMarker.getInstance(project).getGutterMarks().any {
-            it.getUserData(SourceMarkKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
+            it.getUserData(SourceMarkerKeys.INSTRUMENT_TYPE) == LiveInstrumentType.METER
         }
     }
 }
