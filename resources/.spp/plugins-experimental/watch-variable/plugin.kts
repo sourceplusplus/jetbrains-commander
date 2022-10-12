@@ -11,7 +11,6 @@ import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.plugin.*
-import spp.protocol.SourceServices.Subscribe.toLiveInstrumentSubscriberAddress
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.instrument.LiveBreakpoint
 import spp.protocol.instrument.LiveSourceLocation
@@ -21,6 +20,7 @@ import spp.protocol.instrument.throttle.InstrumentThrottle
 import spp.protocol.instrument.throttle.ThrottleStep.SECOND
 import spp.protocol.marshall.ProtocolMarshaller.deserializeLiveBreakpointHit
 import spp.protocol.platform.developer.SelfInfo
+import spp.protocol.service.SourceServices.Subscribe.toLiveInstrumentSubscriberAddress
 import java.awt.Color
 
 class WatchVariableCommand(project: Project) : LiveCommand(project) {

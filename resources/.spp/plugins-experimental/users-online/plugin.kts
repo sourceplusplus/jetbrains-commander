@@ -10,11 +10,11 @@ import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.await
 import net.miginfocom.swing.MigLayout
 import spp.jetbrains.indicator.LiveIndicator
-import spp.jetbrains.marker.service.define.AbstractSourceGuideProvider
 import spp.jetbrains.marker.SourceMarkerUtils
 import spp.jetbrains.marker.service.ArtifactNamingService
 import spp.jetbrains.marker.service.ArtifactTypeService
 import spp.jetbrains.marker.service.SourceGuideProvider
+import spp.jetbrains.marker.service.define.AbstractSourceGuideProvider
 import spp.jetbrains.marker.source.SourceFileMarker
 import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
@@ -22,13 +22,13 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.plugin.*
-import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactType
 import spp.protocol.instrument.LiveMeter
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.instrument.meter.MeterType
 import spp.protocol.instrument.meter.MetricValue
 import spp.protocol.instrument.meter.MetricValueType
+import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent

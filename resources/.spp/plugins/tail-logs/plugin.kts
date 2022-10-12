@@ -22,10 +22,10 @@ import spp.jetbrains.marker.source.mark.guide.MethodGuideMark
 import spp.plugin.registerCommand
 import spp.plugin.show
 import spp.plugin.whenDisposed
-import spp.protocol.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.log.Log
+import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
