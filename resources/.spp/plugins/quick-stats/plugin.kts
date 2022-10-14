@@ -11,7 +11,6 @@ import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
-import spp.jetbrains.marker.source.mark.api.SourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
@@ -47,8 +46,8 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         displayQuickStatsInlay(guideMark)
     }
 
-    private suspend fun displayQuickStatsInlay(sourceMark: SourceMark) {
-        log.info("Displaying quick stats inlay on artifact: ${sourceMark.artifactQualifiedName.identifier}")
+    private suspend fun displayQuickStatsInlay(guideMark: GuideMark) {
+        log.info("Displaying quick stats inlay on artifact: ${guideMark.artifactQualifiedName.identifier}")
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = listOf(
             Endpoint_CPM.asRealtime().getMetricId(swVersion),
@@ -57,12 +56,23 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         )
 
         val inlay = ApplicationManager.getApplication().runReadAction(Computable {
-            ArtifactCreationService.createMethodInlayMark(
-                sourceMark.sourceFileMarker,
-                (sourceMark as MethodSourceMark).getNameIdentifier(),
-                false
-            )
+            when {
+                guideMark.isMethodMark -> ArtifactCreationService.createMethodInlayMark(
+                    guideMark.sourceFileMarker,
+                    (guideMark as MethodSourceMark).getNameIdentifier(),
+                    false
+                )
+
+                guideMark.isExpressionMark -> ArtifactCreationService.createExpressionInlayMark(
+                    guideMark.sourceFileMarker,
+                    guideMark.lineNumber,
+                    false
+                )
+
+                else -> throw IllegalStateException("Guide mark is not a method or expression")
+            }
         })
+
         inlay.configuration.virtualText = InlayMarkVirtualText(inlay, "")
         inlay.configuration.virtualText!!.textAttributes.foregroundColor = inlayForegroundColor
         inlay.configuration.virtualText!!.relativeFontSize = true
@@ -80,9 +90,9 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         viewService.addLiveView(
             LiveView(
                 null,
-                mutableSetOf(sourceMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
-                sourceMark.artifactQualifiedName,
-                LiveSourceLocation(sourceMark.artifactQualifiedName.identifier, 0), //todo: don't need
+                mutableSetOf(guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
+                guideMark.artifactQualifiedName,
+                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0), //todo: don't need
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)
             )
         ).onComplete {
