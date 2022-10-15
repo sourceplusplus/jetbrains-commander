@@ -63,6 +63,12 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
     }
 
     private suspend fun displayQuickStatsInlay(guideMark: GuideMark) {
+        val service = skywalkingMonitorService.getCurrentService()
+        if (service == null) {
+            log.warn("No service selected, skipping quick stats inlay")
+            return
+        }
+
         log.info("Displaying quick stats inlay on artifact: ${guideMark.artifactQualifiedName.identifier}")
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = listOf(
@@ -108,7 +114,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 null,
                 mutableSetOf(guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
                 guideMark.artifactQualifiedName,
-                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0), //todo: don't need
+                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0, service.id),
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)
             )
         ).onComplete {
