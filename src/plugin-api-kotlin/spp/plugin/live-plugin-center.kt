@@ -5,12 +5,12 @@ package spp.plugin
 import com.intellij.openapi.util.IconLoader
 import io.vertx.core.Vertx
 import liveplugin.implementation.pluginrunner.kotlin.LivePluginScript
+import spp.jetbrains.UserData
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.guide.GuideMark
-import spp.jetbrains.UserData
 import spp.jetbrains.plugin.LivePluginService
 import java.io.File
 import javax.swing.Icon
@@ -49,7 +49,7 @@ fun LivePluginScript.findIcon(path: String): Icon? {
 fun LivePluginScript.findByEndpointName(endpointName: String): GuideMark? {
     if (!SourceMarker.getInstance(project).enabled) return null
     return SourceMarker.getInstance(project).getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
-        it.getUserData(EndpointDetector.ENDPOINT_NAME) == endpointName
+        it.getUserData(EndpointDetector.DETECTED_ENDPOINTS)?.any { it.name == endpointName } == true
     }
 }
 

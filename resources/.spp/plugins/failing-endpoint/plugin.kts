@@ -45,7 +45,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
-        private val SLA = SourceKey<Float>(this::class.simpleName + "_SLA")
+        private val SLA = SourceKey<MutableMap<String, Float>>(this::class.simpleName + "_SLA")
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
@@ -66,10 +66,11 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
             log.debug("Endpoint $endpointName is failing. SLA: $sla")
             findByEndpointName(endpointName)?.let { guideMark ->
                 failingEndpoints[endpointName] = guideMark
-                guideMark.putUserData(SLA, sla)
+                guideMark.putUserDataIfAbsent(SLA, hashMapOf<String, Float>())
+                guideMark.getUserData(SLA)!![endpointName] = sla
 
                 if (startIndicator) {
-                    guideMark.triggerEvent(INDICATOR_STARTED, listOf())
+                    guideMark.triggerEvent(INDICATOR_STARTED, listOf(endpointName))
                 }
             }
         }
@@ -80,18 +81,18 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
         previousHighLoads.forEach {
             log.debug("Endpoint $it is no longer failing")
-            failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
+            failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf(it.key))
         }
     }
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
-        if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) {
+        if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.DETECTED_ENDPOINTS != event.params.firstOrNull()) {
             return //ignore other user data updates
         }
 
         when (event.eventCode) {
             INDICATOR_STARTED -> {
-                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                val endpointName = event.params.first() as String
                 ApplicationManager.getApplication().runReadAction {
                     log.info("Adding failing endpoint indicator for: $endpointName")
                     val gutterMark = when (guideMark) {
@@ -100,8 +101,20 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
                         else -> throw IllegalStateException("Guide mark is not a method or expression")
                     }
                     gutterMark.configuration.activateOnMouseHover = false
-                    gutterMark.configuration.tooltipText = {
-                        "Top 20% failing endpoint. SLA: ${guideMark.getUserData(SLA)}%"
+
+                    val slaMap = guideMark.getUserData(SLA)!!
+                    if (slaMap.size == 1) {
+                        gutterMark.configuration.tooltipText = {
+                            "Top 20% failing endpoint. SLA: ${guideMark.getUserData(SLA)!![endpointName]}%"
+                        }
+                    } else {
+                        gutterMark.configuration.tooltipText = {
+                            "Top 20% failing endpoint.\n" + buildString {
+                                slaMap.forEach { (endpoint, sla) ->
+                                    appendLine(" - ${endpoint.substringBefore(":")}: $sla%")
+                                }
+                            }
+                        }
                     }
                     gutterMark.configuration.icon = findIcon("icons/failing-endpoint.svg")
                     gutterMark.apply(true)
@@ -109,14 +122,14 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
 
                     guideMark.addEventListener {
                         if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf())
+                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf(endpointName))
                         }
                     }
                 }
             }
 
             INDICATOR_STOPPED -> {
-                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                val endpointName = event.params.first() as String
                 ApplicationManager.getApplication().runReadAction {
                     failingEndpoints.remove(endpointName)
                     val gutterMark = failingIndicators.remove(guideMark) ?: return@runReadAction
