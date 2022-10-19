@@ -58,7 +58,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
      * Currently only endpoints detected by [EndpointDetector] are supported.
      */
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
-        if (EndpointDetector.ENDPOINT_ID != event.params.firstOrNull()) return
+        if (EndpointDetector.DETECTED_ENDPOINTS != event.params.firstOrNull()) return
         displayQuickStatsInlay(guideMark)
     }
 
@@ -109,10 +109,11 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
 
+        //todo: support multiple endpoints (need way to cycle between them)
         viewService.addLiveView(
             LiveView(
                 null,
-                mutableSetOf(guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)!!),
+                mutableSetOf(guideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)!!.firstNotNullOf { it.name }),
                 guideMark.artifactQualifiedName,
                 LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0, service.id),
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)

@@ -80,7 +80,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
             !currentFailing.map { it.getString("name") }.contains(it.key)
         }
         previousHighLoads.forEach {
-            log.debug("Endpoint $it is no longer failing")
+            log.debug("Endpoint ${it.key} is no longer failing")
             failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf(it.key))
         }
     }
@@ -105,7 +105,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
                     val slaMap = guideMark.getUserData(SLA)!!
                     if (slaMap.size == 1) {
                         gutterMark.configuration.tooltipText = {
-                            "Top 20% failing endpoint. SLA: ${guideMark.getUserData(SLA)!![endpointName]}%"
+                            "Top 20% failing endpoint. SLA: ${slaMap[endpointName]}%"
                         }
                     } else {
                         gutterMark.configuration.tooltipText = {

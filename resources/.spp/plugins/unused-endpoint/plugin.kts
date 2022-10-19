@@ -38,16 +38,16 @@ class UnusedEndpointIndicator(project: Project) : LiveIndicator(project) {
         if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.ENDPOINT_FOUND != event.params.firstOrNull()) {
             return //ignore other user data updates
         }
+        val endpointName = guideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)
+            ?.firstNotNullOf { it.name } ?: return
 
         if (event.params[1] as Boolean) {
-            val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
             ApplicationManager.getApplication().runReadAction {
                 val gutterMark = unusedIndicators.remove(guideMark) ?: return@runReadAction
                 log.info("Removing unused endpoint indicator for: $endpointName")
                 gutterMark.sourceFileMarker.removeSourceMark(gutterMark, autoRefresh = true)
             }
         } else {
-            val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
             ApplicationManager.getApplication().runReadAction {
                 log.info("Adding unused endpoint indicator for: $endpointName")
                 val gutterMark = when (guideMark) {

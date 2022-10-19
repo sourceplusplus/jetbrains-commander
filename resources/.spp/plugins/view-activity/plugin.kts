@@ -39,7 +39,8 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        val endpointId = context.guideMark?.getUserData(EndpointDetector.ENDPOINT_ID) ?: return
+        val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
+        val endpointId = detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
         val serviceId = endpointId.substringBefore("_")
         val pageType = "Activity"
         val newPage = "/dashboard/GENERAL/Endpoint/$serviceId/$endpointId/Endpoint-$pageType?portal=true&fullview=true"

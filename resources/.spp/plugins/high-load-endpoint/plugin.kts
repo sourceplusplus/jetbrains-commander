@@ -45,7 +45,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
     companion object {
         private val INDICATOR_STARTED = IEventCode.getNewIEventCode()
         private val INDICATOR_STOPPED = IEventCode.getNewIEventCode()
-        private val CPM = SourceKey<Int>(this::class.simpleName + "_CPM")
+        private val CPM = SourceKey<MutableMap<String, Int>>(this::class.simpleName + "_CPM")
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
@@ -66,10 +66,11 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
             log.debug("Endpoint $endpointName is high load. Calls per minute: $cpm")
             findByEndpointName(endpointName)?.let { guideMark ->
                 highLoadEndpoints[endpointName] = guideMark
-                guideMark.putUserData(CPM, cpm)
+                guideMark.putUserDataIfAbsent(CPM, hashMapOf<String, Int>())
+                guideMark.getUserData(CPM)!![endpointName] = cpm
 
                 if (startIndicator) {
-                    guideMark.triggerEvent(INDICATOR_STARTED, listOf())
+                    guideMark.triggerEvent(INDICATOR_STARTED, listOf(endpointName))
                 }
             }
         }
@@ -80,18 +81,18 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
         previousHighLoads.forEach {
             log.debug("Endpoint ${it.key} is no longer high load")
-            highLoadEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf())
+            highLoadEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf(it.key))
         }
     }
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
-        if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.ENDPOINT_NAME != event.params.firstOrNull()) {
+        if (event.eventCode == MARK_USER_DATA_UPDATED && EndpointDetector.DETECTED_ENDPOINTS != event.params.firstOrNull()) {
             return //ignore other user data updates
         }
 
         when (event.eventCode) {
             INDICATOR_STARTED -> {
-                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                val endpointName = event.params.first() as String
                 ApplicationManager.getApplication().runReadAction {
                     log.info("Adding high load endpoint indicator for: $endpointName")
                     val gutterMark = when (guideMark) {
@@ -100,8 +101,20 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
                         else -> throw IllegalStateException("Guide mark is not a method or expression")
                     }
                     gutterMark.configuration.activateOnMouseHover = false
-                    gutterMark.configuration.tooltipText = {
-                        "Top 20% highest load. Calls per minute: ${guideMark.getUserData(CPM)}"
+
+                    val cpmMap = guideMark.getUserData(CPM)!!
+                    if (cpmMap.size == 1) {
+                        gutterMark.configuration.tooltipText = {
+                            "Top 20% highest load. Calls per minute: ${cpmMap[endpointName]}"
+                        }
+                    } else {
+                        gutterMark.configuration.tooltipText = {
+                            "Top 20% highest load. Calls per minute:\n" + buildString {
+                                cpmMap.forEach { (endpoint, cpm) ->
+                                    appendLine(" - ${endpoint.substringBefore(":")}: $cpm")
+                                }
+                            }
+                        }
                     }
                     gutterMark.configuration.icon = findIcon("icons/high-load-endpoint.svg")
                     gutterMark.apply(true)
@@ -109,14 +122,14 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
 
                     guideMark.addEventListener {
                         if (it.eventCode == SourceMarkEventCode.MARK_REMOVED) {
-                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf())
+                            guideMark.triggerEvent(INDICATOR_STOPPED, listOf(endpointName))
                         }
                     }
                 }
             }
 
             INDICATOR_STOPPED -> {
-                val endpointName = guideMark.getUserData(EndpointDetector.ENDPOINT_NAME)
+                val endpointName = event.params.first() as String
                 ApplicationManager.getApplication().runReadAction {
                     highLoadEndpoints.remove(endpointName)
                     val gutterMark = highLoadIndicators.remove(guideMark) ?: return@runReadAction
@@ -130,6 +143,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
     }
 
     private suspend fun getHighLoadEndpoints(): List<JsonObject> {
+        if (log.isTraceEnabled) log.trace("Getting high load endpoints")
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
