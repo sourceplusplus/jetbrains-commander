@@ -41,6 +41,7 @@ import spp.plugin.whenDisposed
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.log.Log
+import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
@@ -95,7 +96,13 @@ class TailLogsCommand(
         }
     }
 
-    override fun trigger(context: LiveCommandContext) {
+    override suspend fun triggerSuspend(context: LiveCommandContext) {
+        val service = skywalkingMonitorService.getCurrentService()
+        if (service == null) {
+            log.warn("No service selected, ignoring tail logs command")
+            return
+        }
+
         val guideMark = getLoggerGuideMark(context.fileMarker.project, context.artifactQualifiedName)!!
         val loggerStatements = when (guideMark) {
             is ExpressionGuideMark -> listOf(guideMark.getUserData(DETECTED_LOGGER)!!)
@@ -106,7 +113,11 @@ class TailLogsCommand(
         viewService.addLiveView(
             LiveView(
                 entityIds = loggerStatements.map { it.logPattern }.toMutableSet(),
-                viewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs"))
+                viewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs")),
+                artifactLocation = LiveSourceLocation(
+                    source = guideMark.artifactQualifiedName.identifier,
+                    service = service.id
+                )
             )
         ).onSuccess { sub ->
             if (guideMark !is ExpressionGuideMark) {
