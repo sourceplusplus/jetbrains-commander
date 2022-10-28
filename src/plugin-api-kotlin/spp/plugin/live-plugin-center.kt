@@ -47,7 +47,6 @@ fun LivePluginScript.findIcon(path: String): Icon? {
 }
 
 fun LivePluginScript.findByEndpointName(endpointName: String): GuideMark? {
-    if (!SourceMarker.getInstance(project).enabled) return null
     return SourceMarker.getInstance(project).getSourceMarks().filterIsInstance<GuideMark>().firstOrNull {
         it.getUserData(EndpointDetector.DETECTED_ENDPOINTS)?.any { it.name == endpointName } == true
     }
