@@ -40,8 +40,8 @@ class ClearInstrumentsCommand(project: Project) : LiveCommand(project) {
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
-        if (!selfInfo.permissions.contains(RolePermission.CLEAR_ALL_LIVE_INSTRUMENTS)) {
-            return false //todo: clearing instruments should just need remove permission
+        if (!selfInfo.permissions.contains(RolePermission.REMOVE_LIVE_INSTRUMENT)) {
+            return false
         }
 
         return instrumentService != null
