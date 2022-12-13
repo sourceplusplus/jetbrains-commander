@@ -22,7 +22,7 @@ import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.marker.service.ArtifactScopeService
+import spp.jetbrains.marker.service.ArtifactTypeService
 import spp.plugin.*
 
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
@@ -66,7 +66,7 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
-        return ArtifactScopeService.isJVM(context.element)
+        return ArtifactTypeService.isJvm(context.element)
     }
 }
 
