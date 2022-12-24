@@ -24,8 +24,8 @@ import com.intellij.ui.SimpleTextAttributes
 import spp.jetbrains.PluginBundle
 import spp.jetbrains.PluginUI
 import spp.jetbrains.indicator.LiveIndicator
-import spp.jetbrains.marker.SourceMarkerKeys.METHOD_DURATION
-import spp.jetbrains.marker.SourceMarkerKeys.METHOD_DURATION_PREDICTION
+import spp.jetbrains.marker.SourceMarkerKeys.FUNCTION_DURATION
+import spp.jetbrains.marker.SourceMarkerKeys.FUNCTION_DURATION_PREDICTION
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
@@ -46,7 +46,7 @@ class RuntimeSpeedPredictionIndicator(project: Project) : LiveIndicator(project)
     }
 
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED)
-    private val listenForInsights = setOf(METHOD_DURATION, METHOD_DURATION_PREDICTION)
+    private val listenForInsights = setOf(FUNCTION_DURATION, FUNCTION_DURATION_PREDICTION)
 
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         if (!listenForInsights.contains(event.params.firstOrNull())) return
@@ -56,8 +56,8 @@ class RuntimeSpeedPredictionIndicator(project: Project) : LiveIndicator(project)
     }
 
     private fun displayRuntimeSpeedChangeIndicator(guideMark: GuideMark) {
-        val durationInsight = guideMark.getUserData(METHOD_DURATION)
-        val predictionInsight = guideMark.getUserData(METHOD_DURATION_PREDICTION)
+        val durationInsight = guideMark.getUserData(FUNCTION_DURATION)
+        val predictionInsight = guideMark.getUserData(FUNCTION_DURATION_PREDICTION)
         if (durationInsight == null && predictionInsight == null) {
             return //nothing to display
         }
