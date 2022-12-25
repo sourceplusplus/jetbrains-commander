@@ -51,11 +51,11 @@ class RuntimeDurationPredictionIndicator(project: Project) : LiveIndicator(proje
     override suspend fun trigger(guideMark: GuideMark, event: SourceMarkEvent) {
         if (!listenForInsights.contains(event.params.firstOrNull())) return
         synchronized(INLAY) {
-            displayRuntimeDurationPredictionIndicator(guideMark)
+            displayIndicator(guideMark)
         }
     }
 
-    private fun displayRuntimeDurationPredictionIndicator(guideMark: GuideMark) {
+    private fun displayIndicator(guideMark: GuideMark) {
         val durationInsight = guideMark.getUserData(FUNCTION_DURATION)
         val predictionInsight = guideMark.getUserData(FUNCTION_DURATION_PREDICTION)
         if (durationInsight == null && predictionInsight == null) {
