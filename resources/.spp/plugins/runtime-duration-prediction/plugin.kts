@@ -38,7 +38,7 @@ import spp.plugin.*
 import spp.protocol.utils.toPrettyDuration
 import java.awt.Color
 
-class RuntimeSpeedPredictionIndicator(project: Project) : LiveIndicator(project) {
+class RuntimeDurationPredictionIndicator(project: Project) : LiveIndicator(project) {
 
     companion object {
         private val inlayForegroundColor = JBColor(Color.decode("#787878"), Color.decode("#787878"))
@@ -155,4 +155,4 @@ class RuntimeSpeedPredictionIndicator(project: Project) : LiveIndicator(project)
     }
 }
 
-registerIndicator(RuntimeSpeedPredictionIndicator(project))
+registerIndicator(RuntimeDurationPredictionIndicator(project))
