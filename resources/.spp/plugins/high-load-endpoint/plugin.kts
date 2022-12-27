@@ -17,6 +17,7 @@
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
+import spp.jetbrains.SourceKey
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
@@ -26,7 +27,6 @@ import spp.jetbrains.marker.source.mark.api.event.IEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
-import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
 import spp.jetbrains.monitor.skywalking.model.DurationStep

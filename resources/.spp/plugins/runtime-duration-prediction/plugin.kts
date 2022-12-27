@@ -23,6 +23,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import spp.jetbrains.PluginBundle
 import spp.jetbrains.PluginUI
+import spp.jetbrains.SourceKey
 import spp.jetbrains.indicator.LiveIndicator
 import spp.jetbrains.insight.InsightKeys.FUNCTION_DURATION
 import spp.jetbrains.insight.InsightKeys.FUNCTION_DURATION_PREDICTION
@@ -30,7 +31,6 @@ import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.MethodSourceMark
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
-import spp.jetbrains.marker.source.mark.api.key.SourceKey
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.inlay.InlayMark
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText

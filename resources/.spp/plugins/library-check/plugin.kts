@@ -19,10 +19,10 @@ import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonArray
 import liveplugin.PluginUtil.*
 import spp.jetbrains.PluginUI.commandTypeColor
+import spp.jetbrains.artifact.service.ArtifactTypeService
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.marker.service.ArtifactTypeService
 import spp.plugin.*
 
 class LibraryCheckCommand(project: Project) : LiveCommand(project) {
