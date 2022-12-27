@@ -35,7 +35,7 @@ import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
 import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
 import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
-import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime_AVG
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -150,7 +150,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
         val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val slowestEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
-                Endpoint_RespTime.getMetricId(skywalkingVersion),
+                Endpoint_RespTime_AVG.getMetricId(skywalkingVersion),
                 service.name,
                 true,
                 Scope.Endpoint,

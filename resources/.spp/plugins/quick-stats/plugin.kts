@@ -35,7 +35,7 @@ import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.plugin.*
 import spp.protocol.artifact.metrics.MetricType
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
-import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime
+import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime_AVG
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
 import spp.protocol.instrument.LiveSourceLocation
 import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
@@ -73,7 +73,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = listOf(
             Endpoint_CPM.asRealtime().getMetricId(swVersion),
-            Endpoint_RespTime.asRealtime().getMetricId(swVersion),
+            Endpoint_RespTime_AVG.asRealtime().getMetricId(swVersion),
             Endpoint_SLA.asRealtime().getMetricId(swVersion)
         )
 
@@ -151,7 +151,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
             if (metricType.equalsIgnoringRealtime(Endpoint_CPM)) {
                 value = (metric.getNumber("value").toDouble() / 60.0).fromPerSecondToPrettyFrequency { message(it) }
             }
-            if (metricType.equalsIgnoringRealtime(Endpoint_RespTime)) {
+            if (metricType.equalsIgnoringRealtime(Endpoint_RespTime_AVG)) {
                 value += message("ms")
             }
             sb.append("${message(metricType.simpleName)}: $value")
