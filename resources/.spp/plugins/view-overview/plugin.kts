@@ -20,9 +20,9 @@ import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.marker.source.info.EndpointDetector
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
+import spp.jetbrains.command.LiveLocationContext
+import spp.jetbrains.plugin.LiveViewChartService
+import spp.jetbrains.status.SourceStatusService
 import spp.plugin.*
 
 /**
@@ -36,14 +36,11 @@ class ViewOverviewCommand(project: Project) : LiveCommand(project) {
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        val endpointId = context.guideMark?.getUserData(EndpointDetector.ENDPOINT_ID) ?: return
-        val serviceId = endpointId.substringBefore("_")
-        val pageType = "Overview"
-        val newPage = "/dashboard/GENERAL/Endpoint/$serviceId/$endpointId/Endpoint-$pageType?portal=true&fullview=true"
+        LiveViewChartService.getInstance(project).showOverview()
+    }
 
-        context.guideMark!!.triggerEvent(UPDATE_PORTAL_CONFIG, listOf("setPage", newPage)) {
-            context.guideMark!!.triggerEvent(PORTAL_OPENING, listOf(PORTAL_OPENING))
-        }
+    override fun isAvailable(context: LiveLocationContext): Boolean {
+        return SourceStatusService.getInstance(project).isReady()
     }
 }
 

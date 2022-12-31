@@ -23,8 +23,7 @@ import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.source.info.EndpointDetector
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.PORTAL_OPENING
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.UPDATE_PORTAL_CONFIG
+import spp.jetbrains.plugin.LiveViewTraceService
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
 
@@ -40,14 +39,9 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
 
     override fun trigger(context: LiveCommandContext) {
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
-        val endpointId = detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
-        val serviceId = endpointId.substringBefore("_")
-        val pageType = "Traces"
-        val newPage = "/dashboard/GENERAL/Endpoint/$serviceId/$endpointId/Endpoint-$pageType?portal=true&fullview=true"
+        detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
 
-        context.guideMark!!.triggerEvent(UPDATE_PORTAL_CONFIG, listOf("setPage", newPage)) {
-            context.guideMark!!.triggerEvent(PORTAL_OPENING, listOf(PORTAL_OPENING))
-        }
+        LiveViewTraceService.getInstance(project).showLiveViewTraceWindow(detectedEndpoints.first().name)
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
