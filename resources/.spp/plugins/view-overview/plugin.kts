@@ -36,7 +36,7 @@ class ViewOverviewCommand(project: Project) : LiveCommand(project) {
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        LiveViewChartService.getInstance(project).showOverview()
+        LiveViewChartService.getInstance(project).showOverviewActivity()
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {

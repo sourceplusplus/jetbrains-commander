@@ -41,7 +41,7 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
         detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
 
-        LiveViewChartService.getInstance(project).doThing(detectedEndpoints.first().name)
+        LiveViewChartService.getInstance(project).showEndpointActivity(detectedEndpoints.first().name)
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {

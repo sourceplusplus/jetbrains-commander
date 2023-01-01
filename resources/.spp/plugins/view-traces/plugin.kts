@@ -41,7 +41,7 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
         detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
 
-        LiveViewTraceService.getInstance(project).showLiveViewTraceWindow(detectedEndpoints.first().name)
+        LiveViewTraceService.getInstance(project).showEndpointTraces(detectedEndpoints.first().name)
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
