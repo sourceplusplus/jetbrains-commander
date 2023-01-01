@@ -68,9 +68,10 @@ class ViewLogsCommand(
             return
         }
 
+        val refreshRate = 2000
         val liveView = LiveView(
             entityIds = mutableSetOf("*"),
-            viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"))
+            viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"), refreshRate)
         )
         LiveViewLogManager.getInstance(project)
             .getOrCreateLogWindow(liveView, { consumerCreator(it) }, "Service: ${service.name}")
