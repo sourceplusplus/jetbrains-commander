@@ -56,7 +56,7 @@ class ViewTracesCommand(
         val endpointName = detectedEndpoints.first().name
         val liveView = LiveView(
             entityIds = mutableSetOf(endpointName),
-            viewConfig = LiveViewConfig("TRACE_VIEW", listOf("endpoint_traces"), refreshRate)
+            viewConfig = LiveViewConfig("view-traces-command", listOf("endpoint_traces"), refreshRate)
         )
         LiveViewTraceManager.getInstance(project).showEndpointTraces(liveView, endpointName) {
             consumerCreator(it)
