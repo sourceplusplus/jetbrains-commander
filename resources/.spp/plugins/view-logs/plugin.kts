@@ -16,7 +16,6 @@
  */
 import com.intellij.codeInsight.lookup.impl.LookupCellRenderer
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import io.vertx.core.eventbus.MessageConsumer
@@ -27,8 +26,8 @@ import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.view.LiveViewLogManager
 import spp.jetbrains.status.SourceStatusService
+import spp.jetbrains.view.LiveViewLogManager
 import spp.jetbrains.view.window.LiveLogWindow
 import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
@@ -69,21 +68,15 @@ class ViewLogsCommand(
             return
         }
 
-        viewService.addLiveView(
-            LiveView(
-                entityIds = mutableSetOf("*"),
-                viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"))
-            )
-        ).onSuccess { liveView ->
-            LiveViewLogManager.getInstance(project)
-                .getOrCreateLogWindow(liveView, { consumerCreator(liveView, it) }, "Service: ${service.name}")
-        }.onFailure {
-            show(it.message, notificationType = NotificationType.ERROR)
-        }
+        val liveView = LiveView(
+            entityIds = mutableSetOf("*"),
+            viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"))
+        )
+        LiveViewLogManager.getInstance(project)
+            .getOrCreateLogWindow(liveView, { consumerCreator(it) }, "Service: ${service.name}")
     }
 
     private fun consumerCreator(
-        liveView: LiveView,
         logWindow: LiveLogWindow
     ): MessageConsumer<JsonObject> {
         val consumer = vertx.eventBus().consumer<JsonObject>(
@@ -91,7 +84,7 @@ class ViewLogsCommand(
         )
         consumer.handler {
             val liveViewEvent = LiveViewEvent(it.body())
-            if (liveViewEvent.subscriptionId != liveView.subscriptionId) return@handler
+            if (liveViewEvent.subscriptionId != logWindow.liveView.subscriptionId) return@handler
 
             val rawLog = Log(JsonObject(liveViewEvent.metricsData).getJsonObject("log"))
             val localTime = LocalTime.ofInstant(rawLog.timestamp, ZoneId.systemDefault())
