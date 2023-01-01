@@ -23,7 +23,7 @@ import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.source.info.EndpointDetector
-import spp.jetbrains.plugin.LiveViewChartService
+import spp.jetbrains.view.LiveViewChartManager
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
 
@@ -41,7 +41,7 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
         detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
 
-        LiveViewChartService.getInstance(project).showEndpointActivity(detectedEndpoints.first().name)
+        LiveViewChartManager.getInstance(project).showEndpointActivity(detectedEndpoints.first().name)
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {

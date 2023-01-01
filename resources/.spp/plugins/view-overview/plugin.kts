@@ -21,7 +21,7 @@ import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.plugin.LiveViewChartService
+import spp.jetbrains.view.LiveViewChartManager
 import spp.jetbrains.status.SourceStatusService
 import spp.plugin.*
 
@@ -36,7 +36,7 @@ class ViewOverviewCommand(project: Project) : LiveCommand(project) {
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
-        LiveViewChartService.getInstance(project).showOverviewActivity()
+        LiveViewChartManager.getInstance(project).showOverviewActivity()
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {

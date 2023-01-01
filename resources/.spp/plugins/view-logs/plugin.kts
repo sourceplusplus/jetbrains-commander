@@ -27,9 +27,9 @@ import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.plugin.LiveViewLogService
+import spp.jetbrains.view.LiveViewLogManager
 import spp.jetbrains.status.SourceStatusService
-import spp.jetbrains.view.LogWindow
+import spp.jetbrains.view.window.LiveLogWindow
 import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.log.Log
@@ -75,7 +75,7 @@ class ViewLogsCommand(
                 viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"))
             )
         ).onSuccess { liveView ->
-            LiveViewLogService.getInstance(project)
+            LiveViewLogManager.getInstance(project)
                 .getOrCreateLogWindow(liveView, { consumerCreator(liveView, it) }, "Service: ${service.name}")
         }.onFailure {
             show(it.message, notificationType = NotificationType.ERROR)
@@ -84,7 +84,7 @@ class ViewLogsCommand(
 
     private fun consumerCreator(
         liveView: LiveView,
-        logWindow: LogWindow
+        logWindow: LiveLogWindow
     ): MessageConsumer<JsonObject> {
         val consumer = vertx.eventBus().consumer<JsonObject>(
             toLiveViewSubscriberAddress("system")
@@ -105,9 +105,9 @@ class ViewLogsCommand(
             }
 
             when (rawLog.level.uppercase()) {
-                "LIVE" -> logWindow.console?.print(logLine, liveOutputType)
-                "WARN", "ERROR" -> logWindow.console?.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
-                else -> logWindow.console?.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
+                "LIVE" -> logWindow.console.print(logLine, liveOutputType)
+                "WARN", "ERROR" -> logWindow.console.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
+                else -> logWindow.console.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
             }
         }
         return consumer
