@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import io.vertx.core.eventbus.MessageConsumer
 import io.vertx.core.json.JsonObject
@@ -39,8 +38,11 @@ import spp.protocol.view.LiveViewEvent
 /**
  * Opens the 'Endpoint-Traces' dashboard via portal popup.
  */
-class ViewTracesCommand(project: Project) : LiveCommand(project) {
-    override val name = message("view_traces")
+class ViewTracesCommand(
+    project: Project,
+    override val name: String = message("view_traces")
+) : LiveCommand(project) {
+
     override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("traces") + " ➛ " + message("scope") +
             ": </span><span style=\"color: $commandHighlightColor\">" + message("method") +
@@ -52,25 +54,20 @@ class ViewTracesCommand(project: Project) : LiveCommand(project) {
 
         val refreshRate = 2000
         val endpointName = detectedEndpoints.first().name
-        viewService.addLiveView(
-            LiveView(
-                entityIds = mutableSetOf(endpointName),
-                viewConfig = LiveViewConfig("TRACE_VIEW", listOf("endpoint_traces"), refreshRate)
-            )
-        ).onSuccess { liveView ->
-            LiveViewTraceManager.getInstance(project).showEndpointTraces(liveView, endpointName) {
-                consumerCreator(liveView, it)
-            }
-        }.onFailure {
-            show(it.message, notificationType = NotificationType.ERROR)
+        val liveView = LiveView(
+            entityIds = mutableSetOf(endpointName),
+            viewConfig = LiveViewConfig("TRACE_VIEW", listOf("endpoint_traces"), refreshRate)
+        )
+        LiveViewTraceManager.getInstance(project).showEndpointTraces(liveView, endpointName) {
+            consumerCreator(it)
         }
     }
 
-    private fun consumerCreator(liveView: LiveView, traceWindow: LiveTraceWindow): MessageConsumer<JsonObject> {
+    private fun consumerCreator(traceWindow: LiveTraceWindow): MessageConsumer<JsonObject> {
         val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress("system"))
         consumer.handler {
             val liveViewEvent = LiveViewEvent(it.body())
-            if (liveView.subscriptionId != liveViewEvent.subscriptionId) return@handler
+            if (liveViewEvent.subscriptionId != traceWindow.liveView.subscriptionId) return@handler
 
             val event = JsonObject(liveViewEvent.metricsData)
             val trace = Trace(event.getJsonObject("trace"))
