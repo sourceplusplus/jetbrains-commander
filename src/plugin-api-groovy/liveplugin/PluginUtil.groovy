@@ -6,7 +6,6 @@ import com.intellij.execution.filters.InputFilter
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
-//import com.intellij.internal.psiView.PsiViewerDialog
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType

@@ -15,9 +15,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import liveplugin.PluginUtil
-import liveplugin.implementation.common.IdeUtil
 import liveplugin.implementation.actions.RunPluginAction
 import liveplugin.implementation.actions.UnloadPluginAction
+import liveplugin.implementation.common.IdeUtil
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 

@@ -21,8 +21,8 @@ import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
-import spp.jetbrains.view.LiveViewChartManager
 import spp.jetbrains.status.SourceStatusService
+import spp.jetbrains.view.LiveViewChartManager
 import spp.plugin.*
 
 /**

@@ -12,7 +12,10 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.ShutDownTracker;
 import com.intellij.util.lang.*;
 import com.intellij.util.ui.EDT;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
