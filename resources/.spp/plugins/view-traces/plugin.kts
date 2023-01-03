@@ -52,7 +52,7 @@ class ViewTracesCommand(
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
         detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
 
-        val refreshRate = 2000
+        val refreshRate = 1000
         val endpointName = detectedEndpoints.first().name
         val liveView = LiveView(
             entityIds = mutableSetOf(endpointName),

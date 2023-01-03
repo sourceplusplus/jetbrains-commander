@@ -68,7 +68,7 @@ class ViewLogsCommand(
             return
         }
 
-        val refreshRate = 2000
+        val refreshRate = 1000
         val liveView = LiveView(
             entityIds = mutableSetOf("*"),
             viewConfig = LiveViewConfig("view-logs-command", listOf("endpoint_logs"), refreshRate)
