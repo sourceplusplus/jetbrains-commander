@@ -26,6 +26,7 @@ import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.view.LiveViewChartManager
 import spp.plugin.*
 import spp.protocol.platform.auth.RolePermission
+import spp.protocol.platform.general.ServiceEndpoint
 
 /**
  * Opens the 'Endpoint-Activity' dashboard via portal popup.
@@ -39,9 +40,10 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
 
     override fun trigger(context: LiveCommandContext) {
         val detectedEndpoints = context.guideMark?.getUserData(EndpointDetector.DETECTED_ENDPOINTS) ?: return
-        detectedEndpoints.firstNotNullOfOrNull { it.id } ?: return
+        val detectedEndpoint = detectedEndpoints.find { it.id != null } ?: return
+        val endpoint = ServiceEndpoint(detectedEndpoint.id!!, detectedEndpoint.name)
 
-        LiveViewChartManager.getInstance(project).showEndpointActivity(detectedEndpoints.first().name)
+        LiveViewChartManager.getInstance(project).showEndpointActivity(endpoint)
     }
 
     override fun isAvailable(context: LiveLocationContext): Boolean {
