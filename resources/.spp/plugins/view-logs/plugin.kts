@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.intellij.codeInsight.lookup.impl.LookupCellRenderer
-import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import io.vertx.core.eventbus.MessageConsumer
 import io.vertx.core.json.JsonObject
@@ -30,16 +27,11 @@ import spp.jetbrains.status.SourceStatusService
 import spp.jetbrains.view.LiveViewLogManager
 import spp.jetbrains.view.window.LiveLogWindow
 import spp.plugin.*
-import spp.protocol.artifact.ArtifactNameUtils
-import spp.protocol.artifact.log.Log
 import spp.protocol.platform.auth.RolePermission
 import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import java.awt.Font
-import java.time.LocalTime
-import java.time.ZoneId
 
 /**
  * Tails live application logs and displays them in console.
@@ -48,13 +40,6 @@ class ViewLogsCommand(
     project: Project,
     override val name: String = message("view_logs")
 ) : LiveCommand(project) {
-
-    private val liveOutputType = ConsoleViewContentType(
-        "LIVE_OUTPUT",
-        TextAttributes(
-            LookupCellRenderer.MATCHED_FOREGROUND_COLOR, null, null, null, Font.PLAIN
-        )
-    )
 
     override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("logs") + " ➛ " + message("scope") +
@@ -87,22 +72,7 @@ class ViewLogsCommand(
             val liveViewEvent = LiveViewEvent(it.body())
             if (liveViewEvent.subscriptionId != logWindow.liveView.subscriptionId) return@handler
 
-            val rawLog = Log(JsonObject(liveViewEvent.metricsData).getJsonObject("log"))
-            val localTime = LocalTime.ofInstant(rawLog.timestamp, ZoneId.systemDefault())
-            val logLine = buildString {
-                append(localTime)
-                append(" [").append(rawLog.thread).append("] ")
-                append(rawLog.level.uppercase()).append(" - ")
-                rawLog.logger?.let { append(ArtifactNameUtils.getShortQualifiedClassName(it)).append(" - ") }
-                append(rawLog.toFormattedMessage())
-                appendLine()
-            }
-
-            when (rawLog.level.uppercase()) {
-                "LIVE" -> logWindow.console.print(logLine, liveOutputType)
-                "WARN", "ERROR" -> logWindow.console.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
-                else -> logWindow.console.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
-            }
+            logWindow.handleEvent(liveViewEvent)
         }
         return consumer
     }
