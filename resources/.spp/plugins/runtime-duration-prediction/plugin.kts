@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 import com.intellij.codeInsight.codeVision.ui.model.richText.RichText
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
@@ -62,7 +61,7 @@ class RuntimeDurationPredictionIndicator(project: Project) : LiveIndicator(proje
             return //nothing to display
         }
 
-        val inlay = guideMark.getUserData(INLAY) ?: ApplicationManager.getApplication().runReadAction(Computable {
+        val inlay = guideMark.getUserData(INLAY) ?: dumbService.runReadActionInSmartMode(Computable {
             when {
                 guideMark.isMethodMark -> ArtifactCreationService.createMethodInlayMark(
                     guideMark.sourceFileMarker,
