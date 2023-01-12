@@ -17,6 +17,7 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonArray
+import io.vertx.kotlin.coroutines.await
 import liveplugin.PluginUtil.*
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.artifact.service.ArtifactTypeService
@@ -35,19 +36,19 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
         val librarySearch = (context.args.firstOrNull() ?: "").lowercase()
         val foundLibraries = mutableSetOf<String>()
 
-        val activeServices = skywalkingMonitorService.getActiveServices()
+        val activeServices = managementService.getServices().await()
         if (activeServices.isEmpty()) {
             show("Unable to find active services", notificationType = ERROR)
             return
         }
-        val activeServiceInstances = activeServices.flatMap { skywalkingMonitorService.getServiceInstances(it.id) }
+        val activeServiceInstances = activeServices.flatMap { managementService.getInstances(it.id).await() }
         if (activeServiceInstances.isEmpty()) {
             show("Unable to find active service instances", notificationType = ERROR)
             return
         }
 
         activeServiceInstances.forEach {
-            val jarDependencies = it.attributes.find { it.name == "Jar Dependencies" }?.let { JsonArray(it.value) }
+            val jarDependencies = it.attributes.entries.find { it.key == "Jar Dependencies" }?.let { JsonArray(it.value) }
             jarDependencies?.let {
                 foundLibraries.addAll(
                     jarDependencies.list.map { it.toString() }

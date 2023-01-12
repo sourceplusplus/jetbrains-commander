@@ -16,6 +16,7 @@
  */
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
+import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
 import spp.jetbrains.command.LiveCommandContext
@@ -38,9 +39,9 @@ class BootTimeCommand(project: Project) : LiveCommand(project) {
             .withZone(ZoneOffset.ofHours(serverTimezone.toInt()))
 
         var startTime: LocalDateTime? = null
-        skywalkingMonitorService.getActiveServices().forEach {
-            skywalkingMonitorService.getServiceInstances(it.id).forEach {
-                val instanceStartTime = it.attributes.find { it.name == "Start Time" }?.let {
+        managementService.getServices().await().forEach {
+            managementService.getInstances(it.id).await().forEach {
+                val instanceStartTime = it.attributes.entries.find { it.key == "Start Time" }?.let {
                     ZonedDateTime.parse(it.value, timeFormatter).withZoneSameInstant(ZoneId.systemDefault())
                         .toLocalDateTime()
                 }
