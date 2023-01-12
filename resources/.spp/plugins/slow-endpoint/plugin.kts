@@ -51,10 +51,8 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val slowEndpoints = hashMapOf<String, GuideMark>()
     private val slowIndicators = hashMapOf<GuideMark, GutterMark>()
-    private lateinit var skywalkingVersion: String
 
     override suspend fun refreshIndicator() {
-        skywalkingVersion = skywalkingMonitorService.getVersion()
         val currentSlowest = getTopSlowEndpoints()
 
         //trigger adds
@@ -150,7 +148,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
         val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val slowestEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
-                Endpoint_RespTime_AVG.getMetricId(skywalkingVersion),
+                Endpoint_RespTime_AVG.metricId,
                 service.name,
                 true,
                 Scope.Endpoint,

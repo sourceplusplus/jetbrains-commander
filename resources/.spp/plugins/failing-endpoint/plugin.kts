@@ -51,10 +51,8 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val failingEndpoints = hashMapOf<String, GuideMark>()
     private val failingIndicators = hashMapOf<GuideMark, GutterMark>()
-    private lateinit var skywalkingVersion: String
 
     override suspend fun refreshIndicator() {
-        skywalkingVersion = skywalkingMonitorService.getVersion()
         val currentFailing = getTopFailingEndpoints()
 
         //trigger adds
@@ -150,7 +148,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val failingEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
-                Endpoint_SLA.getMetricId(skywalkingVersion),
+                Endpoint_SLA.metricId,
                 service.name,
                 true,
                 Scope.Endpoint,

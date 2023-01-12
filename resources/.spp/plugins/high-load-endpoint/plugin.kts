@@ -51,10 +51,8 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
     override val listenForEvents = listOf(MARK_USER_DATA_UPDATED, INDICATOR_STARTED, INDICATOR_STOPPED)
     private val highLoadEndpoints = hashMapOf<String, GuideMark>()
     private val highLoadIndicators = hashMapOf<GuideMark, GutterMark>()
-    private lateinit var skywalkingVersion: String
 
     override suspend fun refreshIndicator() {
-        skywalkingVersion = skywalkingMonitorService.getVersion()
         val currentHighLoads = getHighLoadEndpoints()
 
         //trigger adds
@@ -150,7 +148,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
         val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
-                Endpoint_CPM.getMetricId(skywalkingVersion),
+                Endpoint_CPM.metricId,
                 service.name,
                 true,
                 Scope.Endpoint,

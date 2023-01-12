@@ -70,11 +70,10 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         }
 
         log.info("Displaying quick stats inlay on artifact: ${guideMark.artifactQualifiedName.identifier}")
-        val swVersion = skywalkingMonitorService.getVersion()
         val listenMetrics = listOf(
-            Endpoint_CPM.asRealtime().getMetricId(swVersion),
-            Endpoint_RespTime_AVG.asRealtime().getMetricId(swVersion),
-            Endpoint_SLA.asRealtime().getMetricId(swVersion)
+            Endpoint_CPM.asRealtime().metricId,
+            Endpoint_RespTime_AVG.asRealtime().metricId,
+            Endpoint_SLA.asRealtime().metricId
         )
 
         val inlay = ApplicationManager.getApplication().runReadAction(Computable {
