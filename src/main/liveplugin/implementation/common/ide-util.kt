@@ -9,7 +9,6 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.execution.ui.actions.CloseAction
 import com.intellij.icons.AllIcons
-import com.intellij.notification.NotificationGroupManager
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.AsyncDataContext
 import com.intellij.openapi.application.ApplicationManager
@@ -39,11 +38,6 @@ import javax.swing.Icon
 import javax.swing.JPanel
 
 const val livePluginId = "LivePlugin"
-
-// Lazy because it seems that it can be initialised before notification group is initialised in plugin.xml
-val livePluginNotificationGroup by lazy {
-    NotificationGroupManager.getInstance().getNotificationGroup("Live Plugin")!!
-}
 
 object IdeUtil {
     const val ideStartupActionPlace = "IDE_STARTUP"

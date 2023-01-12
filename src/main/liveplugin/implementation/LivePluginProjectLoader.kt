@@ -1,7 +1,6 @@
 package liveplugin.implementation
 
 import com.intellij.ide.impl.isTrusted
-import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -11,7 +10,6 @@ import com.intellij.openapi.project.Project
 import liveplugin.implementation.actions.RunPluginAction
 import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
-import liveplugin.implementation.common.livePluginNotificationGroup
 import liveplugin.implementation.common.toFilePath
 import spp.jetbrains.plugin.LivePluginService
 import spp.jetbrains.plugin.impl.LivePluginServiceImpl
@@ -29,11 +27,6 @@ object LivePluginProjectLoader {
 
     fun projectOpened(project: Project) {
         @Suppress("UnstableApiUsage")
-        if (!project.isTrusted()) {
-            val message = "Skipped execution of project specific plugins because the project is not trusted."
-            livePluginNotificationGroup.createNotification("Live plugin", message, INFORMATION).notify(project)
-            return
-        }
         if (project.getUserData(LivePluginService.KEY) != null) return
         val sppPluginsLocation = if (project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION) == null) {
             val sppPluginsLocation = File(extractSppResources(), "plugins")
@@ -45,13 +38,17 @@ object LivePluginProjectLoader {
 
         project.putUserData(LivePluginService.KEY, LivePluginServiceImpl(project))
         project.putUserData(LivePluginService.LIVE_PLUGIN_LOADER) {
+            //load bundled plugins
             val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
             val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
             RunPluginAction.runPlugins(sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
 
-            val projectPath = project.basePath?.toFilePath() ?: return@putUserData
-            val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
-            RunPluginAction.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+            //load user plugins
+            if (project.isTrusted()) {
+                val projectPath = project.basePath?.toFilePath() ?: return@putUserData
+                val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
+                RunPluginAction.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+            }
         }
     }
 
