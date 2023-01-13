@@ -105,7 +105,7 @@ class LastLogIndicator(project: Project) : LiveIndicator(project) {
                 consumer.handler {
                     val liveViewEvent = LiveViewEvent(it.body())
                     val rawMetrics = JsonObject(liveViewEvent.metricsData)
-                    val logData = Json.decodeValue(rawMetrics.getJsonObject("log").toString(), Log::class.java)
+                    val logData = Log(rawMetrics.getJsonObject("log"))
                     virtualText.updateVirtualText(" [" + logData.arguments.joinToString(",") + "] @ " + logData.timestamp)
                 }
                 inlayMark.addEventListener { event ->

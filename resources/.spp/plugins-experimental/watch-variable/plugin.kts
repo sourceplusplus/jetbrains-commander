@@ -89,7 +89,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         }
 
         consumer.handler {
-            val liveEvent = Json.decodeValue(it.body().toString(), LiveInstrumentEvent::class.java)
+            val liveEvent = LiveInstrumentEvent(it.body())
             if (liveEvent.eventType == BREAKPOINT_HIT) {
                 val bpHit = deserializeLiveBreakpointHit(JsonObject(liveEvent.data))
                 if (bpHit.breakpointId == instrumentId) {
