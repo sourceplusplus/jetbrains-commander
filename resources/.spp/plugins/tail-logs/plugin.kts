@@ -42,7 +42,7 @@ import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
 import spp.protocol.artifact.log.Log
 import spp.protocol.instrument.location.LiveSourceLocation
-import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
+import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscription
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
@@ -141,13 +141,9 @@ class TailLogsCommand(
                 project
             )
 
-            val consumer = vertx.eventBus().consumer<JsonObject>(
-                toLiveViewSubscriberAddress("system")
-            )
+            val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscription(sub.subscriptionId!!))
             consumer.handler {
                 val liveViewEvent = LiveViewEvent(it.body())
-                if (liveViewEvent.subscriptionId != sub.subscriptionId) return@handler
-
                 val rawLog = Log(JsonObject(liveViewEvent.metricsData).getJsonObject("log"))
                 val localTime = LocalTime.ofInstant(rawLog.timestamp, ZoneId.systemDefault())
                 val logLine = buildString {
