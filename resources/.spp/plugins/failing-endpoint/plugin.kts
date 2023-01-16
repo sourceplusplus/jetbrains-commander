@@ -61,7 +61,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
             val sla = it.getString("value").toFloat() / 100.0f
             val startIndicator = !failingEndpoints.containsKey(endpointName)
 
-            log.debug("Endpoint $endpointName is failing. SLA: $sla")
+            if (log.isTraceEnabled) log.trace("Endpoint $endpointName is failing. SLA: $sla")
             findByEndpointName(endpointName)?.let { guideMark ->
                 failingEndpoints[endpointName] = guideMark
                 guideMark.putUserDataIfAbsent(SLA, hashMapOf<String, Float>())

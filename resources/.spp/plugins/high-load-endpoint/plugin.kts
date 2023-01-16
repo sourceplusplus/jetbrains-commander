@@ -61,7 +61,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
             val cpm = it.getString("value").toFloat().toInt()
             val startIndicator = !highLoadEndpoints.containsKey(endpointName)
 
-            log.debug("Endpoint $endpointName is high load. Calls per minute: $cpm")
+            if (log.isTraceEnabled) log.trace("Endpoint $endpointName is high load. Calls per minute: $cpm")
             findByEndpointName(endpointName)?.let { guideMark ->
                 highLoadEndpoints[endpointName] = guideMark
                 guideMark.putUserDataIfAbsent(CPM, hashMapOf<String, Int>())

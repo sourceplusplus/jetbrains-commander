@@ -61,7 +61,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
             val respTime = it.getString("value").toFloat()
             val startIndicator = !slowEndpoints.containsKey(endpointName)
 
-            log.debug("Endpoint $endpointName is slow. Resp time: $respTime")
+            if (log.isTraceEnabled) log.trace("Endpoint $endpointName is slow. Resp time: $respTime")
             findByEndpointName(endpointName)?.let { guideMark ->
                 slowEndpoints[endpointName] = guideMark
                 guideMark.putUserDataIfAbsent(RESP_TIME, hashMapOf<String, Float>())
