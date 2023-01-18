@@ -14,14 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.intellij.codeInsight.lookup.impl.LookupCellRenderer
-import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.notification.NotificationType
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.util.containers.isNullOrEmpty
+import io.vertx.core.eventbus.MessageConsumer
 import io.vertx.core.json.JsonObject
-import liveplugin.PluginUtil.showInConsole
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
@@ -30,25 +26,20 @@ import spp.jetbrains.command.LiveCommandContext
 import spp.jetbrains.command.LiveLocationContext
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.source.info.LoggerDetector.Companion.DETECTED_LOGGER
-import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.CHILD_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.ClassGuideMark
 import spp.jetbrains.marker.source.mark.guide.ExpressionGuideMark
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.guide.MethodGuideMark
+import spp.jetbrains.view.LiveViewLogManager
+import spp.jetbrains.view.window.LiveLogWindow
 import spp.plugin.registerCommand
-import spp.plugin.show
-import spp.plugin.whenDisposed
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
-import spp.protocol.artifact.log.Log
 import spp.protocol.instrument.location.LiveSourceLocation
-import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscription
+import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
 import spp.protocol.view.LiveViewEvent
-import java.awt.Font
-import java.time.LocalTime
-import java.time.ZoneId
 
 /**
  * Tails live application logs and displays them in console.
@@ -58,13 +49,6 @@ class TailLogsCommand(
     project: Project,
     override val name: String = "Tail Logs"
 ) : LiveCommand(project) {
-
-    private val liveOutputType = ConsoleViewContentType(
-        "LIVE_OUTPUT",
-        TextAttributes(
-            LookupCellRenderer.MATCHED_FOREGROUND_COLOR, null, null, null, Font.PLAIN
-        )
-    )
 
     override fun getDescription(context: LiveLocationContext): String {
         return when (val guideMark = getLoggerGuideMark(context.fileMarker.project, context.qualifiedName)) {
@@ -110,65 +94,39 @@ class TailLogsCommand(
         }
         log.info("Tailing logs for statements: ${loggerStatements.map { it.logPattern }}")
 
-        viewService.addLiveView(
-            LiveView(
-                entityIds = loggerStatements.map { it.logPattern }.toMutableSet(),
-                viewConfig = LiveViewConfig("tail-logs-command", listOf("endpoint_logs")),
-                artifactLocation = LiveSourceLocation(
-                    source = guideMark.artifactQualifiedName.identifier,
-                    service = service.id
-                )
+        val refreshRate = 1000
+        val liveView = LiveView(
+            entityIds = loggerStatements.map { it.logPattern }.toMutableSet(),
+            viewConfig = LiveViewConfig(
+                "tail-logs-command",
+                listOf("endpoint_logs"),
+                refreshRateLimit = refreshRate
+            ),
+            artifactLocation = LiveSourceLocation(
+                source = guideMark.artifactQualifiedName.identifier,
+                service = service.id
             )
-        ).onSuccess { sub ->
-            if (guideMark !is ExpressionGuideMark) {
-                guideMark.addEventListener {
-                    if (it.eventCode == CHILD_USER_DATA_UPDATED && DETECTED_LOGGER == it.params.firstOrNull()) {
-                        val updatedLogPatterns = guideMark.getChildren().mapNotNull { it.getUserData(DETECTED_LOGGER) }
-                            .map { it.logPattern }.toMutableSet()
-                        log.info("Updating tailed log patterns to: $updatedLogPatterns")
+        )
+        LiveViewLogManager.getInstance(project).getOrCreateLogWindow(
+            liveView,
+            { consumerCreator(it) },
+            "Tail: ${ArtifactNameUtils.removePackageAndClassName(guideMark.artifactQualifiedName.identifier)}"
+        )
+    }
 
-                        viewService.updateLiveView(
-                            sub.subscriptionId!!,
-                            sub.copy(entityIds = updatedLogPatterns)
-                        )
-                    }
-                }
-            }
+    private fun consumerCreator(
+        logWindow: LiveLogWindow
+    ): MessageConsumer<JsonObject> {
+        val consumer = vertx.eventBus().consumer<JsonObject>(
+            toLiveViewSubscriberAddress("system")
+        )
+        consumer.handler {
+            val liveViewEvent = LiveViewEvent(it.body())
+            if (liveViewEvent.subscriptionId != logWindow.liveView.subscriptionId) return@handler
 
-            val console = showInConsole(
-                "",
-                "Logs: " + ArtifactNameUtils.removePackageAndClassName(guideMark.artifactQualifiedName.identifier),
-                project
-            )
-
-            val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscription(sub.subscriptionId!!))
-            consumer.handler {
-                val liveViewEvent = LiveViewEvent(it.body())
-                val rawLog = Log(JsonObject(liveViewEvent.metricsData).getJsonObject("log"))
-                val localTime = LocalTime.ofInstant(rawLog.timestamp, ZoneId.systemDefault())
-                val logLine = buildString {
-                    append(localTime)
-                    append(" [").append(rawLog.thread).append("] ")
-                    append(rawLog.level.uppercase()).append(" - ")
-                    rawLog.logger?.let { append(ArtifactNameUtils.getShortQualifiedClassName(it)).append(" - ") }
-                    append(rawLog.toFormattedMessage())
-                    appendLine()
-                }
-
-                when (rawLog.level.uppercase()) {
-                    "LIVE" -> console.print(logLine, liveOutputType)
-                    "WARN", "ERROR" -> console.print(logLine, ConsoleViewContentType.ERROR_OUTPUT)
-                    else -> console.print(logLine, ConsoleViewContentType.NORMAL_OUTPUT)
-                }
-            }
-
-            console.whenDisposed {
-                consumer.unregister()
-                viewService.removeLiveView(sub.subscriptionId!!)
-            }
-        }.onFailure {
-            show(it.message, notificationType = NotificationType.ERROR)
+            logWindow.handleEvent(liveViewEvent)
         }
+        return consumer
     }
 
     //todo: ability to dynamically recheck isAvailable while control bar is open
