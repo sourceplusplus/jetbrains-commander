@@ -17,7 +17,6 @@
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.LiveCommand
@@ -29,13 +28,12 @@ import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText
 import spp.plugin.*
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.instrument.LiveBreakpoint
+import spp.protocol.instrument.event.LiveBreakpointHit
 import spp.protocol.instrument.event.LiveInstrumentEvent
 import spp.protocol.instrument.event.LiveInstrumentEventType.BREAKPOINT_HIT
 import spp.protocol.instrument.location.LiveSourceLocation
 import spp.protocol.instrument.throttle.InstrumentThrottle
 import spp.protocol.instrument.throttle.ThrottleStep.SECOND
-import spp.protocol.marshall.ProtocolMarshaller.deserializeLiveBreakpointHit
-import spp.protocol.platform.developer.SelfInfo
 import spp.protocol.service.SourceServices.Subscribe.toLiveInstrumentSubscriberAddress
 import java.awt.Color
 
@@ -54,7 +52,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
 
         instrumentService!!.addLiveInstrument(
             LiveBreakpoint(
-                LiveSourceLocation(
+                location = LiveSourceLocation(
                     ArtifactNameUtils.getQualifiedClassName(context.artifactQualifiedName.identifier)!!,
                     context.lineNumber + 1
                 ),
@@ -91,7 +89,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         consumer.handler {
             val liveEvent = LiveInstrumentEvent(it.body())
             if (liveEvent.eventType == BREAKPOINT_HIT) {
-                val bpHit = deserializeLiveBreakpointHit(JsonObject(liveEvent.data))
+                val bpHit = LiveBreakpointHit(JsonObject(liveEvent.data))
                 if (bpHit.breakpointId == instrumentId) {
                     val liveVariables = bpHit.stackTrace.first().variables
                     val liveVar = liveVariables.find { it.name == variableName }
@@ -103,7 +101,7 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         }
     }
 
-    override fun isAvailable(selfInfo: SelfInfo, context: LiveLocationContext): Boolean {
+    override fun isAvailable(context: LiveLocationContext): Boolean {
         return instrumentService != null
     }
 }
