@@ -38,7 +38,7 @@ import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime_AVG
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
 import spp.protocol.instrument.location.LiveSourceLocation
-import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
+import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscription
 import spp.protocol.utils.fromPerSecondToPrettyFrequency
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
@@ -120,7 +120,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         ).onComplete {
             if (it.succeeded()) {
                 val subscriptionId = it.result().subscriptionId!!
-                vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(subscriptionId)) {
+                vertx.eventBus().consumer<JsonObject>(toLiveViewSubscription(subscriptionId)) {
                     val viewEvent = LiveViewEvent(it.body())
                     inlay.configuration.virtualText!!.updateVirtualText(formatLiveEvent(viewEvent))
                 }
