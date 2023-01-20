@@ -73,7 +73,6 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         val virtualText = InlayMarkVirtualText(inlay, " // Live value: n/a")
         virtualText.useInlinePresentation = true
         virtualText.textAttributes.foregroundColor = Color.orange
-        inlay.configuration.activateOnMouseClick = false
         inlay.configuration.virtualText = virtualText
         inlay.apply(true)
 

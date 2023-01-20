@@ -149,7 +149,6 @@ class RuntimeDurationPredictionIndicator(project: Project) : LiveIndicator(proje
             }
         }
         inlay.configuration.virtualText!!.priority = -10_000 //make sure it's always on top
-        inlay.configuration.activateOnMouseClick = false
         inlay.apply(true)
     }
 }
