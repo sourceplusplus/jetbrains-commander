@@ -1,18 +1,9 @@
-buildscript {
-	repositories {
-		mavenCentral()
-		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-		maven { url "https://pkg.sourceplus.plus/sourceplusplus/protocol" }
-	}
-}
 plugins {
-	id "org.jetbrains.intellij"
-	id "org.jetbrains.kotlin.jvm"
+	id "org.jetbrains.intellij" version "1.10.1"
+	id "org.jetbrains.kotlin.jvm" version "1.7.0"
+	id "java"
+	id "groovy"
 }
-apply plugin:"java"
-apply plugin:"groovy"
-apply plugin:"idea"
-apply plugin:"org.jetbrains.intellij"
 
 archivesBaseName = "LivePlugin"
 
@@ -20,37 +11,34 @@ repositories {
 	mavenCentral()
 }
 
-ext.kotlinVersion = "1.6.10"
-ext.groovyVersion = "3.0.9" // Matches the version of Groovy bundled with IntelliJ
-
-java {
-	sourceCompatibility = JavaVersion.VERSION_11
-	targetCompatibility = JavaVersion.VERSION_11
-}
+// Should match Kotlin version bundled with IntelliJ (see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library)
+// If the version is older, it will still work in IJ but is likely to be incompatible with Kotlin plugin which is often one version ahead.
+ext.kotlinVersion = "1.7.0"
+// Must match Groovy version bundled with IntelliJ (see IJ/Contents/lib/groovy.jar/META-INF/org.codehaus.groovy.runtime.ExtensionModule)
+ext.groovyVersion = "3.0.13"
 
 intellij {
 	// To find available IDE versions see https://www.jetbrains.com/intellij-repository/releases
 	// and https://www.jetbrains.com/intellij-repository/snapshots
 	version = System.getenv().getOrDefault("IJ_VERSION",
-        "221.5080.210" // Compatibility with IJ 2022.1 (groovy 3, kotlin 1.6, changes in PluginClassLoader https://github.com/dkandalov/live-plugin/issues/123)
-        // "LATEST-EAP-SNAPSHOT"
+//		"221.5080.210" // Compatibility with IJ 2022.1 (Groovy 3, Kotlin 1.6, changes in PluginClassLoader https://github.com/dkandalov/live-plugin/issues/123)
+		 "223.7571.182"
 	)
 	pluginName = "LivePlugin"
 	downloadSources = true
-    // Disable patching plugin.xml because "until" version is too restrictive (it's better to keep it open-ended).
-	updateSinceUntilBuild = false
+	updateSinceUntilBuild = false // Disable patching plugin.xml because "until" version is too restrictive (it's better to keep it open-ended).
 	plugins = [
 		"java",
 		"Groovy",
 		"Kotlin",
-		"git4idea",
-		"github",
-		"junit"
+		"Git4Idea",
+		"org.jetbrains.plugins.github",
+		"junit",
+//		"com.intellij.dev"
 	]
 }
-tasks.buildSearchableOptions {
-	enabled = false
-}
+buildSearchableOptions.enabled = false // Disable because LivePlugin doesn't need it, it takes a long time and it was failing at some point https://youtrack.jetbrains.com/issue/KTIJ-782.
+runIde.jbrVariant.set("jcef") // JVM with Java Chromium Embedded Framework because why not (see also https://github.com/JetBrains/gradle-intellij-plugin#running-dsl)
 
 var protocolVersion = project.properties["protocolVersion"] as String ?: projectVersion
 
@@ -74,29 +62,34 @@ dependencies {
 	compileOnly("io.vertx:vertx-core:$vertxVersion")
 	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
 
-	// Bundle kotlin compiler and stdlib with LivePlugin because they are not always included into IDEs
-	// and because kotlin jars in IDE are likely to be updated, potentially breaking liveplugins,
-	// so it should be more reliable to have a particular version of kotlin jars inside LivePlugin.
+	// Bundle Kotlin compiler and stdlib with LivePlugin because they are not always included into IDEs
+	// and because Kotlin jars in IDE are likely to be updated, potentially breaking liveplugins,
+	// so it should be more reliable to have a particular version of Kotlin jars inside LivePlugin.
 	runtimeOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion"
 	runtimeOnly "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
 	runtimeOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 	runtimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 
-	// Explicit groovy dependency because even though groovy is bundled with IJ,
-	// it's not picked up by groovy compiler in the latest versions.
+	// Explicit Groovy dependency because even though Groovy is bundled with IJ,
+	// it's not picked up by Groovy compiler in the latest versions.
 	compileOnly "org.codehaus.groovy:groovy-all:${groovyVersion}"
 	testCompileOnly "org.codehaus.groovy:groovy-all:${groovyVersion}"
 
-	testImplementation group: "junit", name: "junit", version: "4.13.1" // includes hamcrest-core
+	implementation "org.http4k:http4k-core:4.26.0.0"
+	implementation("org.http4k:http4k-client-okhttp:4.26.0.0") {
+		exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"
+	}
+	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
+	testImplementation "org.junit.platform:junit-platform-engine:1.9.0"
 }
 //"Move kotlin compiler jars from plugin classpath into a separate folder so that there are no conflicts between kotlin and intellij classes"()
 "Add source files to compiler output so that LivePlugin source code is available for navigation at runtime"()
-'Move GDSL file into standardDsls folder'()
+'Copy GDSL file into standardDsls folder'()
 
 sourceSets {
-	// Keep groovy and kotlin API source code in separate source sets, otherwise
-	// compilation fails because of inter-dependencies between kotlin and groovy files which confuse compiler,
-	// even though overall dependencies are unidirectional: pluginApiKotlin -> pluginApiGroovy -> main
+	// Keep Groovy and Kotlin API source code in separate source sets, otherwise
+	// compilation fails because of inter-dependencies between Kotlin and Groovy files which confuse compiler,
+	// even though overall dependencies are unidirectional: pluginApiKotlin -> pluginApiGroovy -> main.
 
 	main {
 		java { srcDir "src/main" }
@@ -115,6 +108,7 @@ sourceSets {
 	}
 	test {
 		groovy { srcDir "src/test" }
+		kotlin { srcDir "src/test" }
 		compileClasspath = main.output + pluginApiGroovy.output +
 			configurations.testCompileClasspath + configurations.pluginApiGroovyCompileClasspath
 		runtimeClasspath = test.output + main.output + pluginApiGroovy.output +
@@ -123,69 +117,72 @@ sourceSets {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	sourceCompatibility = JavaVersion.VERSION_11
-	targetCompatibility = JavaVersion.VERSION_11
+	sourceCompatibility = "17"
+	targetCompatibility = "17"
 }
-// Configure kotlinOptions for all tasks for each of the sourcesets specified above.
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-	sourceCompatibility = JavaVersion.VERSION_11
-	targetCompatibility = JavaVersion.VERSION_11
 
+// Not using KotlinCompile import because of https://youtrack.jetbrains.com/issue/IDEA-201732
+//noinspection UnnecessaryQualifiedReference
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+	sourceCompatibility = "17"
+	targetCompatibility = "17"
 	kotlinOptions {
-		jvmTarget = "11"
-		sourceCompatibility = JavaVersion.VERSION_11
-		targetCompatibility = JavaVersion.VERSION_11
-		apiVersion = "1.6"
-		languageVersion = "1.6"
+		sourceCompatibility = "17"
+		targetCompatibility = "17"
+		jvmTarget = "17"
+		apiVersion = "1.7"
+		languageVersion = "1.7"
 		freeCompilerArgs = ["-Xjvm-default=all"] // Added for LivePluginKotlinScriptProvider
 	}
-}
-
-runIde {
-	jbrVariant = "jcef"
 }
 
 jar {
 	from sourceSets.pluginApiGroovy.output, sourceSets.pluginApiKotlin.output
 }
 
-task validateLivePluginZip() { doLast {
-	def pluginZip = zipTree("build/distributions/LivePlugin.zip")
-	def pluginZipFiles = pluginZip.files.collect { it.path.replaceFirst(".*[/\\\\]LivePlugin.zip.*?[/\\\\]", "").replace("\\","/") }
+tasks.register('validateLivePluginZip') {
+	doLast {
+		def pluginZip = zipTree("build/distributions/LivePlugin.zip")
+		def pluginZipFiles = pluginZip.files.collect { it.path.replaceFirst(".*[/\\\\]LivePlugin.zip.*?[/\\\\]", "").replace("\\", "/") }
 
-	def kotlinCompilerAndItsTransitiveDependencies = [
-		"LivePlugin/kotlin-compiler/annotations-13.0.jar",
-		"LivePlugin/kotlin-compiler/jna-5.6.0.jar",
-		"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-compiler-wrapper-0.8.jar",
-		"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-reflect-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-stdlib-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.6.10.jar",
-		"LivePlugin/kotlin-compiler/trove4j-1.0.20181211.jar"
-	]
-	def expectedLivePluginJars = [
-		"LivePlugin/lib/LivePlugin.jar",
-		"LivePlugin/lib/standardDsls/livePluginCompletions.gdsl",
-	]
-	expectToBeEqual(pluginZipFiles.toSorted(), (expectedLivePluginJars + kotlinCompilerAndItsTransitiveDependencies).toSorted())
+		def kotlinCompilerAndItsTransitiveDependencies = [
+			"LivePlugin/kotlin-compiler/annotations-13.0.jar",
+			"LivePlugin/kotlin-compiler/jna-5.6.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-compiler-wrapper.jar",
+			"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-reflect-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/trove4j-1.0.20200330.jar",
+			"LivePlugin/lib/http4k-client-okhttp-4.26.0.0.jar",
+			"LivePlugin/lib/http4k-core-4.26.0.0.jar",
+			"LivePlugin/lib/okhttp-4.9.3.jar",
+			"LivePlugin/lib/okio-jvm-2.8.0.jar"
+		]
+		def expectedLivePluginJars = [
+			"LivePlugin/lib/LivePlugin.jar",
+			"LivePlugin/lib/standardDsls/livePluginCompletions.gdsl",
+		]
+		expectToBeEqual(pluginZipFiles.toSorted(), (expectedLivePluginJars + kotlinCompilerAndItsTransitiveDependencies).toSorted())
 
-	def livePluginJar = zipTree(pluginZip.files.find { it.name == "LivePlugin.jar" })
-	def livePluginJarFiles = livePluginJar.files.collect{ it.path.replaceFirst(".*[/\\\\]LivePlugin.jar.*?[/\\\\]", "").replace("\\","/") }.toSet()
-	expectToContain(livePluginJarFiles, [
-		"liveplugin/implementation/LivePlugin.class",
-		"liveplugin/PluginUtil.class",
-		"liveplugin/PluginUtil.groovy",
-		"liveplugin/Plugin_utilKt.class",
-		"liveplugin/plugin-util.kt",
-		"META-INF/plugin.xml",
-	].toSet())
-} }
+		def livePluginJar = zipTree(pluginZip.files.find { it.name == "LivePlugin.jar" })
+		def livePluginJarFiles = livePluginJar.files.collect { it.path.replaceFirst(".*[/\\\\]LivePlugin.jar.*?[/\\\\]", "").replace("\\", "/") }.toSet()
+		expectToContain(livePluginJarFiles, [
+			"liveplugin/implementation/LivePlugin.class",
+			"liveplugin/PluginUtil.class",
+			"liveplugin/PluginUtil.groovy",
+			"liveplugin/Plugin_utilKt.class",
+			"liveplugin/plugin-util.kt",
+			"META-INF/plugin.xml",
+		].toSet())
+	}
+}
 buildPlugin.finalizedBy(validateLivePluginZip)
 
 static expectToContain(Set actual, Set expected) {
@@ -208,26 +205,9 @@ static expectToBeEqual(Collection actual, Collection expected) {
 	}
 }
 
-task installLivePlugin() { doLast {
-	def version = new File("resources/META-INF/plugin.xml").readLines()
-			.find { it.contains("<version>") }
-			.replaceFirst(".*<version>", "")
-			.replaceFirst("</version>.*", "")
-	def localMavenPath = repositories.mavenLocal().url.path + "/liveplugin/live-plugin/"
-	def toFile = "${localMavenPath}/${version}/live-plugin-${version}.jar"
-
-	ant.copy(
-		file: "LivePlugin.jar",
-		toFile: toFile
-	)
-
-	println("Installed to local maven liveplugin version " + version)
-	println("Path: ${toFile}")
-} }
-
 def "Add source files to compiler output so that LivePlugin source code is available for navigation at runtime"() {
 	compileJava.doLast {
-		def classesFolder = project.tasks.findByName(JavaPlugin.COMPILE_JAVA_TASK_NAME).destinationDir
+		def classesFolder = project.tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME).get().destinationDir
 		ant.copy(toDir: classesFolder.absolutePath, overwrite: true) {
 			ant.fileset(dir: "./src/plugin-api-groovy", includes: "**/*")
 			ant.fileset(dir: "./src/plugin-api-kotlin", includes: "**/*")
@@ -240,7 +220,10 @@ def "Add source files to compiler output so that LivePlugin source code is avail
 //	prepareSandbox.doLast {
 //		new File("build/idea-sandbox/plugins/interface-jetbrains/lib")
 //			.listFiles().toList()
-//			.findAll { it.name.endsWith(".jar") && it.name != "LivePlugin.jar" }
+//			.findAll {
+				(it.name.startsWith("kotlin-") || it.name.startsWith("jna-") || it.name.startsWith("annotations-") || it.name.startsWith("trove4j-")) &&
+					it.name.endsWith(".jar") && it.name != "LivePlugin.jar"
+			}
 //			.each {
 //				ant.move(
 //					file: "build/idea-sandbox/plugins/interface-jetbrains/lib/${it.name}",
@@ -250,10 +233,10 @@ def "Add source files to compiler output so that LivePlugin source code is avail
 //	}
 //}
 
-def "Move GDSL file into standardDsls folder"() {
+def 'Copy GDSL file into standardDsls folder'() {
 	prepareSandbox.doLast {
-		def resourcesFolder = project.tasks.findByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).destinationDir
-		ant.move(
+		def resourcesFolder = project.tasks.named(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).get().destinationDir
+		ant.copy(
 			file: resourcesFolder.absolutePath + "/liveplugin/livePluginCompletions.gdsl",
 			tofile: "build/idea-sandbox/plugins/LivePlugin/lib/standardDsls/livePluginCompletions.gdsl",
 			quiet: true

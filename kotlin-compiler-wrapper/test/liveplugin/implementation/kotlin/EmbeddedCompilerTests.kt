@@ -92,22 +92,22 @@ private class KtsScriptFixture {
             kotlinScriptCompilerImplEmbeddable,
             File("out/test/classes"), // For running via IntelliJ
             File("build/classes/kotlin/test"), // For running via gradle
-            File(srcDir.absolutePath) // Because this is what KotlinPluginCompiler class is doing.
         ),
+        jrePath = File(System.getProperty("java.home")),
         outputDirectory = outputDir,
         livePluginScriptClass = templateClass
     )
 
     companion object {
-        private val kotlinStdLib: File = findInGradleCache("kotlin-stdlib")
-        private val kotlinScriptRuntime: File = findInGradleCache("kotlin-script-runtime")
-        private val kotlinScriptingCommon: File = findInGradleCache("kotlin-scripting-common")
-        private val kotlinScriptJvm: File = findInGradleCache("kotlin-scripting-jvm")
-        private val kotlinScriptCompilerEmbeddable: File = findInGradleCache("kotlin-scripting-compiler-embeddable")
-        private val kotlinScriptCompilerImplEmbeddable: File = findInGradleCache("kotlin-scripting-compiler-impl-embeddable")
+        private val kotlinStdLib = findInGradleCache("kotlin-stdlib")
+        private val kotlinScriptRuntime = findInGradleCache("kotlin-script-runtime")
+        private val kotlinScriptingCommon = findInGradleCache("kotlin-scripting-common")
+        private val kotlinScriptJvm = findInGradleCache("kotlin-scripting-jvm")
+        private val kotlinScriptCompilerEmbeddable = findInGradleCache("kotlin-scripting-compiler-embeddable")
+        private val kotlinScriptCompilerImplEmbeddable = findInGradleCache("kotlin-scripting-compiler-impl-embeddable")
 
         private fun findInGradleCache(libName: String): File {
-            val kotlinVersion = "1.6.10"
+            val kotlinVersion = "1.7.0"
             val dir = File(System.getProperty("user.home") + "/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin")
             val libDir = dir.listFiles()?.find { it.name == libName } ?: error("Couldn't find $libName in $dir")
             val libVersionDir = libDir.listFiles()?.find { it.name == kotlinVersion } ?: error("Couldn't find $kotlinVersion in $libDir")

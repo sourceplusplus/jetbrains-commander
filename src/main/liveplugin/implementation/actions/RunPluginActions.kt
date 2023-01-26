@@ -1,22 +1,16 @@
 package liveplugin.implementation.actions
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.Separator
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import liveplugin.implementation.LivePlugin
 import liveplugin.implementation.common.Icons.rerunPluginIcon
 import liveplugin.implementation.common.Icons.runPluginIcon
+import liveplugin.implementation.common.Icons.testPluginIcon
 import liveplugin.implementation.common.IdeUtil
 import liveplugin.implementation.common.IdeUtil.displayError
 import liveplugin.implementation.common.IdeUtil.ideStartupActionPlace
@@ -25,21 +19,13 @@ import liveplugin.implementation.common.flatMap
 import liveplugin.implementation.common.peekFailure
 import liveplugin.implementation.common.toFilePath
 import liveplugin.implementation.livePlugins
-import liveplugin.implementation.pluginrunner.AnError
-import liveplugin.implementation.pluginrunner.AnError.LoadingError
-import liveplugin.implementation.pluginrunner.AnError.RunningError
-import liveplugin.implementation.pluginrunner.Binding
-import liveplugin.implementation.pluginrunner.PluginRunner
-import liveplugin.implementation.pluginrunner.canBeHandledBy
-import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyPluginRunner
-import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.testGroovyPluginRunner
-import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinPluginRunner
-import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.testKotlinPluginRunner
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.canBeHandledBy
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.runPlugins
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.runPluginsTests
+import liveplugin.implementation.pluginrunner.pluginRunners
+import liveplugin.implementation.pluginrunner.pluginTestRunners
 
-private val pluginRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
-private val pluginTestRunners = listOf(testGroovyPluginRunner, testKotlinPluginRunner)
-
-class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon), DumbAware {
+class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIcon), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
         runPlugins(event.livePlugins(), event)
@@ -57,22 +43,12 @@ class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon
     }
 
     companion object {
-        @JvmStatic fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginRunners, event) }
-        }
-
-        @JvmStatic fun runPluginsTests(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginTestRunners, event) }
-        }
-
-        fun pluginNameInActionText(livePlugins: List<LivePlugin>): String {
-            val pluginNameInActionText = when (livePlugins.size) {
+        fun pluginNameInActionText(livePlugins: List<LivePlugin>): String =
+            when (livePlugins.size) {
                 0    -> "Plugin"
                 1    -> "'${livePlugins.first().id}' Plugin"
                 else -> "Selected Plugins"
             }
-            return pluginNameInActionText
-        }
     }
 }
 
@@ -86,16 +62,15 @@ class RunLivePluginsGroup : DefaultActionGroup(
     }
 
     companion object {
-        fun AnAction.hiddenWhenDisabled() = HiddenWhenDisabledAction(this)
-    }
+        fun AnAction.hiddenWhenDisabled(): AnAction = HiddenWhenDisabledAction(this)
 
-    class HiddenWhenDisabledAction(private val delegate: AnAction): AnAction(), DumbAware {
-        override fun actionPerformed(event: AnActionEvent) = delegate.actionPerformed(event)
-        override fun update(event: AnActionEvent) {
-            val presentation = delegate.templatePresentation
-            event.presentation.text = presentation.text
-            event.presentation.description = presentation.description
-            event.presentation.icon = presentation.icon
+        private class HiddenWhenDisabledAction(private val delegate: AnAction) : AnAction(), DumbAware {
+            override fun actionPerformed(event: AnActionEvent) = delegate.actionPerformed(event)
+            override fun update(event: AnActionEvent) {
+                val presentation = delegate.templatePresentation
+                event.presentation.text = presentation.text
+                event.presentation.description = presentation.description
+                event.presentation.icon = presentation.icon
 
             delegate.update(event)
             if (!event.presentation.isEnabled) event.presentation.isVisible = false
