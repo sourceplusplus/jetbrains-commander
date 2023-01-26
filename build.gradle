@@ -221,9 +221,9 @@ def "Add source files to compiler output so that LivePlugin source code is avail
 //		new File("build/idea-sandbox/plugins/interface-jetbrains/lib")
 //			.listFiles().toList()
 //			.findAll {
-				(it.name.startsWith("kotlin-") || it.name.startsWith("jna-") || it.name.startsWith("annotations-") || it.name.startsWith("trove4j-")) &&
-					it.name.endsWith(".jar") && it.name != "LivePlugin.jar"
-			}
+//				(it.name.startsWith("kotlin-") || it.name.startsWith("jna-") || it.name.startsWith("annotations-") || it.name.startsWith("trove4j-")) &&
+//					it.name.endsWith(".jar") && it.name != "LivePlugin.jar"
+//			}
 //			.each {
 //				ant.move(
 //					file: "build/idea-sandbox/plugins/interface-jetbrains/lib/${it.name}",
