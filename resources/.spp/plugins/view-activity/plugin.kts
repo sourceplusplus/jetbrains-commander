@@ -49,9 +49,13 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
     override fun isAvailable(context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.VIEW_ACTIVITY)) {
             return false
+        } else if (!ArtifactScopeService.isOnOrInsideFunction(context.qualifiedName, context.element)) {
+            return false
         }
 
-        return ArtifactScopeService.isOnOrInsideFunction(context.qualifiedName, context.element)
+        val functionGuideMark = context.getFunctionGuideMark() ?: return false
+        val detectedEndpoints = functionGuideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)
+        return (detectedEndpoints?.firstNotNullOfOrNull { it.id } != null)
     }
 }
 

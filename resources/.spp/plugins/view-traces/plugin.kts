@@ -79,9 +79,13 @@ class ViewTracesCommand(
     override fun isAvailable(context: LiveLocationContext): Boolean {
         if (!selfInfo.permissions.contains(RolePermission.VIEW_TRACES)) {
             return false
+        } else if (!ArtifactScopeService.isOnOrInsideFunction(context.qualifiedName, context.element)) {
+            return false
         }
 
-        return ArtifactScopeService.isOnOrInsideFunction(context.qualifiedName, context.element)
+        val functionGuideMark = context.getFunctionGuideMark() ?: return false
+        val detectedEndpoints = functionGuideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)
+        return (detectedEndpoints?.firstNotNullOfOrNull { it.id } != null)
     }
 }
 
