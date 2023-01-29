@@ -35,7 +35,7 @@ class ViewActivityCommand(project: Project) : LiveCommand(project) {
     override val name = message("view_activity")
     override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("activity") + " ➛ " + message("scope") +
-            ": </span><span style=\"color: $commandHighlightColor\">" + message("method") +
+            ": </span><span style=\"color: $commandHighlightColor\">" + message("endpoint") +
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {

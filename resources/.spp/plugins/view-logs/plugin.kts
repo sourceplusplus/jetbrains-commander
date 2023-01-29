@@ -43,7 +43,7 @@ class ViewLogsCommand(
 
     override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("logs") + " ➛ " + message("scope") +
-            ": </span><span style=\"color: $commandHighlightColor\">" + message("method") +
+            ": </span><span style=\"color: $commandHighlightColor\">" + message("service") +
             "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {

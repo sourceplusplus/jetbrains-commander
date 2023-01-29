@@ -45,7 +45,7 @@ class ViewTracesCommand(
 
     override fun getDescription(): String = "<html><span style=\"color: $commandTypeColor\">" +
             message("live_view") + " ➛ " + message("traces") + " ➛ " + message("scope") +
-            ": </span><span style=\"color: $commandHighlightColor\">" + message("method") +
+            ": </span><span style=\"color: $commandHighlightColor\">" + message("endpoint") +
             "</span></html>"
 
     override fun trigger(context: LiveCommandContext) {
