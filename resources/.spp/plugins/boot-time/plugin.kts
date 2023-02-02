@@ -30,11 +30,7 @@ class BootTimeCommand(project: Project) : LiveCommand(project) {
             "Gets the earliest boot time for the current service" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
-        val serverTimezone = skywalkingMonitorService.getTimeInfo().timezone
-        if (serverTimezone == null) {
-            show("Unable to determine server timezone", notificationType = NotificationType.ERROR)
-            return
-        }
+        val serverTimezone = managementService.getTimeInfo().await().timezone
         val timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.ofHours(serverTimezone.toInt()))
 
