@@ -145,7 +145,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
-        val service = skywalkingMonitorService.getCurrentService() ?: return emptyList()
+        val service = statusService.getCurrentService() ?: return emptyList()
         val failingEndpoints = skywalkingMonitorService.sortMetrics(
             TopNCondition(
                 Endpoint_SLA.metricId,

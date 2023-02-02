@@ -63,7 +63,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
     }
 
     private suspend fun displayQuickStatsInlay(guideMark: GuideMark) {
-        val service = skywalkingMonitorService.getCurrentService()
+        val service = statusService.getCurrentService()
         if (service == null) {
             log.warn("No service selected, skipping quick stats inlay")
             return
