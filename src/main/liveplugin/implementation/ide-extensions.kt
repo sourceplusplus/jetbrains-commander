@@ -31,11 +31,11 @@ import com.intellij.usages.impl.rules.UsageTypeProvider
 import com.intellij.util.indexing.IndexableSetContributor
 import liveplugin.implementation.LivePluginPaths.livePluginsCompiledPath
 import liveplugin.implementation.LivePluginPaths.livePluginsPath
-import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.Icons.pluginIcon
 import liveplugin.implementation.common.IdeUtil.runLaterOnEdt
 import liveplugin.implementation.common.delete
 import liveplugin.implementation.common.toFilePath
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.unloadPlugins
 import org.jetbrains.jps.model.module.UnknownSourceRootType
 
 // For consistency with "IDE Consoles" it's good to have live plugins under "Scratches and Consoles"
@@ -63,12 +63,9 @@ class LivePluginDeletedListener : BulkFileListener {
 
     private fun handleLivePluginDeleted(event: VFileEvent) {
         val livePlugins = listOf(event).map { event.file!!.toFilePath() }.toLivePlugins()
-        val project = ProjectManager.getInstance().openProjects.find {
-            ProjectRootManager.getInstance(it).fileIndex.isInContent(event.file!!)
-        }
         if (livePlugins.isNotEmpty()) {
             runLaterOnEdt {
-                UnloadPluginAction.unloadPlugins(project, livePlugins)
+                unloadPlugins(livePlugins)
                 livePlugins.forEach { plugin ->
                     (livePluginsCompiledPath + plugin.id).toVirtualFile()?.delete()
                 }

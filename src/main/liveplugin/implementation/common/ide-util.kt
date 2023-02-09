@@ -9,6 +9,9 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.execution.ui.actions.CloseAction
 import com.intellij.icons.AllIcons
+import com.intellij.ide.plugins.PluginUtil
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.AsyncDataContext
 import com.intellij.openapi.application.ApplicationManager
@@ -21,6 +24,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.vfs.VfsUtil
@@ -60,14 +64,18 @@ object IdeUtil {
             logger.error(consoleTitle, PluginException(text, PluginId.getId(livePluginId)))
         } else {
             ToolWindowManager.getInstance(project).invokeLater {
-                showInConsole(text, consoleTitle, project, ConsoleViewContentType.ERROR_OUTPUT)
+                project.showInConsole(text, consoleTitle, ConsoleViewContentType.ERROR_OUTPUT)
             }
         }
     }
 
-    fun showErrorDialog(project: Project?, message: String, title: String) {
-        Messages.showMessageDialog(project, message, title, Messages.getErrorIcon())
+    fun Project?.showError(message: String, e: Exception? = null) {
+        //livePluginNotificationGroup.createNotification(title = "Live plugin", message, ERROR).notify(this)
+        if (e != null) logger.error(e) // Don't log it as an error because then IJ will show an additional window with stacktrace.
     }
+
+    fun Project?.showInputDialog(message: String, title: String, inputValidator: InputValidatorEx? = null, initialValue: String? = null) =
+        Messages.showInputDialog(this, message, title, null, initialValue, inputValidator)
 
     fun runLaterOnEdt(f: () -> Any) {
         ApplicationManager.getApplication().invokeLater { f.invoke() }
@@ -85,28 +93,32 @@ object IdeUtil {
         return Unscramble.normalizeText(writer.buffer.toString())
     }
 
-    private fun showInConsole(message: String, consoleTitle: String, project: Project, contentType: ConsoleViewContentType) {
-        val runnable = {
-            val console = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-            console.print(message, contentType)
+    private fun Project.showInConsole(message: String, consoleTitle: String, contentType: ConsoleViewContentType) {
+        ToolWindowManager.getInstance(this).invokeLater {
+            val runContentManager = RunContentManager.getInstance(this)
+            val executor = DefaultRunExecutor.getRunExecutorInstance()
 
             val toolbarActions = DefaultActionGroup()
-            val consoleComponent = MyConsolePanel(console, toolbarActions)
-            val descriptor = object: RunContentDescriptor(console, null, consoleComponent, consoleTitle) {
+            val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this).console.also {
+                it.print(message, contentType)
+            }
+            val consoleComponent = MyConsolePanel(consoleView, toolbarActions)
+
+            val contentDescriptor = runContentManager.allDescriptors.find { it.displayName == consoleTitle }
+            if (contentDescriptor != null) runContentManager.removeRunContent(executor, contentDescriptor)
+
+            val descriptor = object : RunContentDescriptor(consoleView, null, consoleComponent, consoleTitle) {
                 override fun isContentReuseProhibited() = true
                 override fun getIcon() = AllIcons.Nodes.Plugin
             }
-            val executor = DefaultRunExecutor.getRunExecutorInstance()
+            toolbarActions.add(CloseAction(executor, descriptor, this))
+            toolbarActions.addAll(*consoleView.createConsoleActions())
 
-            toolbarActions.add(CloseAction(executor, descriptor, project))
-            toolbarActions.addAll(*console.createConsoleActions())
-
-            RunContentManager.getInstance(project).showRunContent(executor, descriptor)
+            runContentManager.showRunContent(executor, descriptor)
         }
-        ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.NON_MODAL)
     }
 
-    private class MyConsolePanel(consoleView: ExecutionConsole, toolbarActions: ActionGroup): JPanel(BorderLayout()) {
+    private class MyConsolePanel(consoleView: ExecutionConsole, toolbarActions: ActionGroup) : JPanel(BorderLayout()) {
         init {
             val toolbarPanel = JPanel(BorderLayout()).also {
                 val actionToolbar = ActionManager.getInstance().createActionToolbar(livePluginActionPlace, toolbarActions, false)
@@ -189,7 +201,7 @@ object IdeUtil {
      * Can't use `FileTypeManager.getInstance().getFileTypeByExtension("kts");` here
      * because it will return FileType for .kt files and this will cause creating files with wrong extension.
      */
-    object KotlinScriptFileType: FileType {
+    object KotlinScriptFileType : FileType {
         override fun getName() = "Kotlin"
         override fun getDescription() = this.name
         override fun getDefaultExtension() = "kts"
@@ -204,12 +216,15 @@ object IdeUtil {
 
         // The kotlin icon is missing in some IDEs like WebStorm, so it's important
         // to set `strict` to false in findIcon, so an exception won't be thrown.
-        private fun findIconOrNull(path: String) : Icon? {
+        private fun findIconOrNull(path: String): Icon? {
             val callerClass = ReflectionUtil.getGrandCallerClass() ?: return null
             return IconLoader.findIcon(path, callerClass, false, false)
         }
     }
 }
+
+fun inputValidator(f: (String) -> String?) =
+    InputValidatorEx { inputString -> f(inputString) }
 
 fun AnActionEvent.selectedFiles(): List<FilePath> =
     dataContext.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)?.map { it.toFilePath() } ?: emptyList()

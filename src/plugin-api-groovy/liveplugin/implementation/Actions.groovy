@@ -13,17 +13,19 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.keymap.KeymapManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.wm.IdeFocusManager
 import liveplugin.PluginUtil
 import liveplugin.implementation.actions.RunPluginAction
 import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.IdeUtil
+import liveplugin.implementation.common.IdeUtil
+import liveplugin.implementation.pluginrunner.PluginRunner
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
 import javax.swing.*
 import java.util.function.Function
 
+import static java.util.concurrent.TimeUnit.SECONDS
 import static liveplugin.implementation.Misc.newDisposable
 
 class Actions {
@@ -90,12 +92,12 @@ class Actions {
 					"Please create one or change source code to use some other configuration.")
 			}
 			def builder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.runExecutorInstance, settings)
-			def environment = builder.contentToReuse(null).dataContext(null).activeTarget().build()
+			def executionEnv = builder.contentToReuse(null).dataContext(null).activeTarget().build()
 
 			// Execute runner directly instead of using ProgramRunnerUtil.executeConfiguration()
 			// because it doesn't allow running multiple instances of the same configuration
-			environment.assignNewExecutionId()
-			environment.runner.execute(environment)
+			executionEnv.assignNewExecutionId()
+			executionEnv.runner.execute(executionEnv)
 
 		} catch (ExecutionException e) {
 			return PluginUtil.show(e)
@@ -103,15 +105,15 @@ class Actions {
 	}
 
 	static runLivePlugin(@NotNull String pluginId, @NotNull Project project) {
-		RunPluginAction.runPlugins([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
+		PluginRunner.runPlugins([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
 	}
 
 	static unloadLivePlugin(@NotNull String pluginId) {
-		UnloadPluginAction.unloadPlugins([LivePlugin.livePluginsById()[pluginId]])
+		PluginRunner.unloadPlugins([LivePlugin.livePluginsById()[pluginId]])
 	}
 
 	static testLivePlugin(@NotNull String pluginId, @NotNull Project project) {
-		RunPluginAction.runPluginsTests([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
+		PluginRunner.runPluginsTests([LivePlugin.livePluginsById()[pluginId]], dummyEvent(project))
 	}
 
 	private static AnActionEvent dummyEvent(Project project) {
@@ -130,7 +132,7 @@ class Actions {
 	}
 
 	static DataContext dataContextFromFocus() {
-		DataManager.instance.getDataContext(IdeFocusManager.globalInstance.focusOwner)
+		DataManager.instance.getDataContextFromFocusAsync().blockingGet(2, SECONDS)
 	}
 
 	private static DefaultActionGroup findActionGroup(String actionGroupId) {

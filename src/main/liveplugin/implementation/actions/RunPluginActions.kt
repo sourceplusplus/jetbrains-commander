@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Disposer
 import liveplugin.implementation.LivePlugin
 import liveplugin.implementation.common.Icons.rerunPluginIcon
 import liveplugin.implementation.common.Icons.runPluginIcon
+import liveplugin.implementation.common.Icons.testPluginIcon
 import liveplugin.implementation.common.IdeUtil
 import liveplugin.implementation.common.IdeUtil.displayError
 import liveplugin.implementation.common.IdeUtil.ideStartupActionPlace
@@ -25,21 +26,12 @@ import liveplugin.implementation.common.flatMap
 import liveplugin.implementation.common.peekFailure
 import liveplugin.implementation.common.toFilePath
 import liveplugin.implementation.livePlugins
-import liveplugin.implementation.pluginrunner.AnError
-import liveplugin.implementation.pluginrunner.AnError.LoadingError
-import liveplugin.implementation.pluginrunner.AnError.RunningError
-import liveplugin.implementation.pluginrunner.Binding
-import liveplugin.implementation.pluginrunner.PluginRunner
-import liveplugin.implementation.pluginrunner.canBeHandledBy
-import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyPluginRunner
-import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.testGroovyPluginRunner
-import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinPluginRunner
-import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.testKotlinPluginRunner
+import liveplugin.implementation.pluginrunner.*
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.canBeHandledBy
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.runPlugins
+import liveplugin.implementation.pluginrunner.PluginRunner.Companion.runPluginsTests
 
-private val pluginRunners = listOf(mainGroovyPluginRunner, mainKotlinPluginRunner)
-private val pluginTestRunners = listOf(testGroovyPluginRunner, testKotlinPluginRunner)
-
-class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon), DumbAware {
+class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIcon), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
         runPlugins(event.livePlugins(), event)
@@ -57,22 +49,12 @@ class RunPluginAction: AnAction("Load Plugin", "Load live plugin", runPluginIcon
     }
 
     companion object {
-        @JvmStatic fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginRunners, event) }
-        }
-
-        @JvmStatic fun runPluginsTests(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginTestRunners, event) }
-        }
-
-        fun pluginNameInActionText(livePlugins: List<LivePlugin>): String {
-            val pluginNameInActionText = when (livePlugins.size) {
+        fun pluginNameInActionText(livePlugins: List<LivePlugin>): String =
+            when (livePlugins.size) {
                 0    -> "Plugin"
                 1    -> "'${livePlugins.first().id}' Plugin"
                 else -> "Selected Plugins"
             }
-            return pluginNameInActionText
-        }
     }
 }
 
@@ -86,85 +68,94 @@ class RunLivePluginsGroup : DefaultActionGroup(
     }
 
     companion object {
-        fun AnAction.hiddenWhenDisabled() = HiddenWhenDisabledAction(this)
-    }
+        fun AnAction.hiddenWhenDisabled(): AnAction = HiddenWhenDisabledAction(this)
 
-    class HiddenWhenDisabledAction(private val delegate: AnAction): AnAction(), DumbAware {
-        override fun actionPerformed(event: AnActionEvent) = delegate.actionPerformed(event)
-        override fun update(event: AnActionEvent) {
-            val presentation = delegate.templatePresentation
-            event.presentation.text = presentation.text
-            event.presentation.description = presentation.description
-            event.presentation.icon = presentation.icon
+        private class HiddenWhenDisabledAction(private val delegate: AnAction) : AnAction(), DumbAware {
+            override fun actionPerformed(event: AnActionEvent) = delegate.actionPerformed(event)
+            override fun update(event: AnActionEvent) {
+                val presentation = delegate.templatePresentation
+                event.presentation.text = presentation.text
+                event.presentation.description = presentation.description
+                event.presentation.icon = presentation.icon
 
-            delegate.update(event)
-            if (!event.presentation.isEnabled) event.presentation.isVisible = false
+                delegate.update(event)
+                if (!event.presentation.isEnabled) event.presentation.isVisible = false
+            }
         }
     }
-}
 
-private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActionEvent) {
-    val project = event.project
-    val binding = Binding.create(this, event)
-    val pluginRunner = pluginRunners.find { path.find(it.scriptName) != null }
-        ?: return displayError(id, LoadingError(message = "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"), project)
+    private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActionEvent) {
+        val project = event.project
+        val binding = Binding.create(this, event)
+        val pluginRunner = pluginRunners.find { path.find(it.scriptName) != null }
+            ?: return displayError(
+                id,
+                SetupError(message = "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"),
+                project
+            )
 
-    pluginRunner.setup(this, project)
-        .flatMap { runOnEdt { pluginRunner.run(it, binding) } }
-        .peekFailure { displayError(id, it, project) }
-}
+        pluginRunner.setup(this, project)
+            .flatMap { runOnEdt { pluginRunner.run(it, binding) } }
+            .peekFailure { displayError(id, it, project) }
+    }
 
-private fun runInBackground(project: Project?, taskDescription: String, function: () -> Any) {
-    if (project == null) {
-        // Can't use ProgressManager here because it will show with modal dialogs on IDE startup when there is no project
-        ApplicationManager.getApplication().executeOnPooledThread {
-            function()
-        }
-    } else {
-        ProgressManager.getInstance().run(object: Task.Backgroundable(project, taskDescription, false, ALWAYS_BACKGROUND) {
-            override fun run(indicator: ProgressIndicator) {
+    private fun runInBackground(project: Project?, taskDescription: String, function: () -> Any) {
+        if (project == null) {
+            // Can't use ProgressManager here because it will show with modal dialogs on IDE startup when there is no project
+            ApplicationManager.getApplication().executeOnPooledThread {
                 function()
             }
-        })
-    }
-}
-
-private val bindingByPluginId = HashMap<String, Binding>()
-
-fun Binding.Companion.lookup(livePlugin: LivePlugin, project: Project?): Binding? =
-    bindingByPluginId[livePlugin.idByProject(project)]
-
-fun Binding.Companion.create(livePlugin: LivePlugin, event: AnActionEvent): Binding {
-    val oldBinding = bindingByPluginId[livePlugin.idByProject(event.project)]
-    if (oldBinding != null) {
-        try {
-            Disposer.dispose(oldBinding.pluginDisposable)
-        } catch (e: Exception) {
-            displayError(livePlugin.id, RunningError(e), event.project)
+        } else {
+            ProgressManager.getInstance()
+                .run(object : Task.Backgroundable(project, taskDescription, false, ALWAYS_BACKGROUND) {
+                    override fun run(indicator: ProgressIndicator) {
+                        function()
+                    }
+                })
         }
     }
 
-    val disposable = object: Disposable {
-        override fun dispose() {}
-        override fun toString() = "LivePlugin: $livePlugin"
+    private val bindingByPluginId = HashMap<String, Binding>()
+
+    fun Binding.Companion.lookup(livePlugin: LivePlugin, project: Project?): Binding? =
+        bindingByPluginId[livePlugin.idByProject(project)]
+
+    fun Binding.Companion.create(livePlugin: LivePlugin, event: AnActionEvent): Binding {
+        val oldBinding = bindingByPluginId[livePlugin.idByProject(event.project)]
+        if (oldBinding != null) {
+            try {
+                Disposer.dispose(oldBinding.pluginDisposable)
+            } catch (e: Exception) {
+                displayError(livePlugin.id, RunningError(e), event.project)
+            }
+        }
+
+        val disposable = object : Disposable {
+            override fun dispose() {}
+            override fun toString() = "LivePlugin: $livePlugin"
+        }
+        Disposer.register(ApplicationManager.getApplication(), disposable)
+
+        val binding = Binding(event.project, event.place == ideStartupActionPlace, livePlugin.path.value, disposable)
+        bindingByPluginId[livePlugin.idByProject(event.project)] = binding
+
+        return binding
     }
-    Disposer.register(ApplicationManager.getApplication(), disposable)
 
-    val binding = Binding(event.project, event.place == ideStartupActionPlace, livePlugin.path.value, disposable)
-    bindingByPluginId[livePlugin.idByProject(event.project)] = binding
-
-    return binding
-}
-
-fun Binding.dispose(project: Project?) {
-    Disposer.dispose(pluginDisposable)
-    bindingByPluginId.remove(LivePlugin(pluginPath.toFilePath()).idByProject(project))
-}
-
-private fun displayError(pluginId: String, error: AnError, project: Project?) {
-    val (title, message) = when (error) {
-        is LoadingError -> Pair("Loading error: $pluginId", error.message + if (error.throwable != null) "\n" + IdeUtil.unscrambleThrowable(error.throwable) else "")
-        is RunningError -> Pair("Running error: $pluginId", IdeUtil.unscrambleThrowable(error.throwable))
+    fun Binding.dispose(project: Project?) {
+        Disposer.dispose(pluginDisposable)
+        bindingByPluginId.remove(LivePlugin(pluginPath.toFilePath()).idByProject(project))
     }
-    displayError(title, message, project)
+
+    private fun displayError(pluginId: String, error: PluginError, project: Project?) {
+        val (title, message) = when (error) {
+            is SetupError -> Pair(
+                "Loading error: $pluginId",
+                error.message + if (error.throwable != null) "\n" + IdeUtil.unscrambleThrowable(error.throwable) else ""
+            )
+
+            is RunningError -> Pair("Running error: $pluginId", IdeUtil.unscrambleThrowable(error.throwable))
+        }
+        displayError(title, message, project)
+    }
 }

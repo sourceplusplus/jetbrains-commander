@@ -12,18 +12,15 @@ import liveplugin.implementation.common.*
 import liveplugin.implementation.common.IdeUtil.unscrambleThrowable
 import liveplugin.implementation.common.Result.Success
 import liveplugin.implementation.pluginrunner.*
-import liveplugin.implementation.pluginrunner.AnError.LoadingError
-import liveplugin.implementation.pluginrunner.AnError.RunningError
-import liveplugin.implementation.pluginrunner.PluginRunner.ClasspathAddition.createClassLoaderWithDependencies
-import liveplugin.implementation.pluginrunner.PluginRunner.ClasspathAddition.findClasspathAdditions
-import liveplugin.implementation.pluginrunner.PluginRunner.ClasspathAddition.findPluginDescriptorsOfDependencies
-import liveplugin.implementation.pluginrunner.PluginRunner.ClasspathAddition.withTransitiveDependencies
+import liveplugin.implementation.pluginrunner.PluginDependencies.createClassLoaderWithDependencies
+import liveplugin.implementation.pluginrunner.PluginDependencies.findClasspathAdditions
+import liveplugin.implementation.pluginrunner.PluginDependencies.findPluginDescriptorsOfDependencies
+import liveplugin.implementation.pluginrunner.PluginDependencies.withTransitiveDependencies
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinAddToClasspathKeyword
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.kotlinDependsOnPluginKeyword
 import org.apache.commons.codec.digest.MurmurHash3
 import org.jetbrains.jps.model.java.impl.JavaSdkUtil
 import java.io.File
-import java.io.IOException
 import kotlin.io.path.absolutePathString
 
 /**
@@ -52,18 +49,18 @@ class KotlinPluginRunner(
 ): PluginRunner {
     data class ExecutableKotlinPlugin(val pluginClass: Class<*>) : ExecutablePlugin
 
-    override fun setup(plugin: LivePlugin, project: Project?): Result<ExecutablePlugin, AnError> {
+    override fun setup(plugin: LivePlugin, project: Project?): Result<ExecutablePlugin, SetupError> {
         val mainScript = plugin.path.find(scriptName)
-            ?: return LoadingError(message = "Startup script $scriptName was not found.").asFailure()
+            ?: return SetupError(message = "Startup script $scriptName was not found.").asFailure()
 
         val pluginDescriptorsOfDependencies = findPluginDescriptorsOfDependencies(mainScript.readLines(), kotlinDependsOnPluginKeyword)
-            .map { it.onFailure { (message) -> return LoadingError(message).asFailure() } }
-            .onEach { if (!it.isEnabled) return LoadingError("Dependent plugin '${it.pluginId}' is disabled").asFailure() }
+            .map { it.onFailure { (message) -> return SetupError(message).asFailure() } }
+            .onEach { if (!it.isEnabled) return SetupError("Dependent plugin '${it.pluginId}' is disabled").asFailure() }
             .withTransitiveDependencies()
 
         val environment = systemEnvironment + Pair("PLUGIN_PATH", plugin.path.value) + Pair("PROJECT_PATH", project?.basePath ?: "PROJECT_PATH")
         val additionalClasspath = findClasspathAdditions(mainScript.readLines(), kotlinAddToClasspathKeyword, environment)
-            .flatMap { it.onFailure { (path) -> return LoadingError("Couldn't find dependency '$path.'").asFailure() } }
+            .flatMap { it.onFailure { (path) -> return SetupError("Couldn't find dependency '$path.'").asFailure() } }
 
         // Add plugin path hashcode in case there are plugins with the same id in different locations.
         val compilerOutput = livePluginsCompiledPath + "${plugin.id}-${plugin.path.value.hashCode()}"
@@ -74,7 +71,7 @@ class KotlinPluginRunner(
 
             KotlinPluginCompiler()
                 .compile(plugin.path.value, pluginDescriptorsOfDependencies, additionalClasspath, compilerOutput.toFile())
-                .onFailure { (reason) -> return LoadingError(reason).asFailure() }
+                .onFailure { (reason) -> return SetupError(reason).asFailure() }
 
             srcHashCode.update()
         }
@@ -85,15 +82,15 @@ class KotlinPluginRunner(
                 livePluginLibAndSrcFiles() +
                 additionalClasspath
             val classLoader = createClassLoaderWithDependencies(runtimeClassPath, pluginDescriptorsOfDependencies, plugin)
-                .onFailure { return LoadingError(it.reason.message).asFailure() }
+                .onFailure { return SetupError(it.reason.message).asFailure() }
             classLoader.loadClass(loadClazz)
         } catch (e: Throwable) {
-            return LoadingError("Error while loading plugin class.", e).asFailure()
+            return SetupError("Error while loading plugin class.", e).asFailure()
         }
         return ExecutableKotlinPlugin(pluginClass).asSuccess()
     }
 
-    override fun run(executablePlugin: ExecutablePlugin, binding: Binding): Result<Unit, AnError> {
+    override fun run(executablePlugin: ExecutablePlugin, binding: Binding): Result<Unit, RunningError> {
         val pluginClass = (executablePlugin as ExecutableKotlinPlugin).pluginClass
         return try {
             // Arguments below must match constructor of LivePluginScript class.
@@ -122,7 +119,7 @@ private class KotlinPluginCompiler {
         pluginDescriptorsOfDependencies: List<IdeaPluginDescriptor>,
         additionalClasspath: List<File>,
         compilerOutput: File
-    ): Result<Unit, String> {
+    ): Result<Unit, String> = try {
         // Ideally, the compilerClasspath could be replaced by LivePluginScriptConfig
         // (which implicitly sets up the compiler classpath via kotlin scripting) but
         // this approach doesn't seem to work e.g. for ideLibFiles() and resolving dependent plugins.
@@ -130,7 +127,7 @@ private class KotlinPluginCompiler {
             ideLibFiles() +
             livePluginLibAndSrcFiles() +
             pluginDescriptorsOfDependencies.flatMap { descriptor -> descriptor.toLibFiles() } +
-            // Put kotlin compiler libs after plugin dependencies because if there is Kotlin plugin in plugin dependencies,
+            // Put Kotlin compiler libs after plugin dependencies because if there is Kotlin plugin in plugin dependencies,
             // it somehow picks up wrong PSI classes from kotlin-compiler-embeddable.jar.
             // E.g. "type mismatch: inferred type is KtVisitor<Void, Void> but PsiElementVisitor was expected".
             livePluginKotlinCompilerLibFiles() +
@@ -139,47 +136,48 @@ private class KotlinPluginCompiler {
 
         val compilerRunnerClass = compilerClassLoader.loadClass("liveplugin.implementation.kotlin.EmbeddedCompilerKt")
         val compilePluginMethod = compilerRunnerClass.declaredMethods.find { it.name == "compile" }!!
-        return try {
-            // Note that arguments passed via reflection CANNOT use pure Kotlin types
-            // because compiler uses different classloader to load Kotlin so classes won't be compatible
-            // (it's ok though to use types like kotlin.String which becomes java.lang.String at runtime).
-            @Suppress("UNCHECKED_CAST")
-            val compilationErrors = compilePluginMethod.invoke(
-                null,
-                pluginFolderPath,
-                compilerClasspath,
-                compilerOutput,
-                LivePluginScriptForCompilation::class.java
-            ) as List<String>
+        // Note that arguments passed via reflection CANNOT use pure Kotlin types
+        // because compiler uses different classloader to load Kotlin so classes won't be compatible
+        // (it's ok though to use types like kotlin.String which becomes java.lang.String at runtime).
+        @Suppress("UNCHECKED_CAST")
+        val compilationErrors = compilePluginMethod.invoke(
+            null,
+            pluginFolderPath,
+            compilerClasspath,
+            File(System.getProperty("java.home")),
+            compilerOutput,
+            LivePluginScriptForCompilation::class.java
+        ) as List<String>
 
-            if (compilationErrors.isNotEmpty()) {
-                return "Error compiling script.\n${compilationErrors.joinToString("\n")}".asFailure()
-            } else {
-                Unit.asSuccess()
-            }
-        } catch (e: IOException) {
-            return "Error creating scripting engine.\n${unscrambleThrowable(e)}".asFailure()
-        } catch (e: Throwable) {
-            // Don't depend directly on `CompilationException` because it's part of Kotlin plugin
-            // and LivePlugin should be able to run kotlin scripts without it
-            val reason = if (e.javaClass.canonicalName == "org.jetbrains.kotlin.codegen.CompilationException") {
-                "Error compiling script.\n${unscrambleThrowable(e)}"
-            } else {
-                "LivePlugin error while compiling script.\n${unscrambleThrowable(e)}"
-            }
-            return reason.asFailure()
+        if (compilationErrors.isNotEmpty()) {
+            "Error compiling script.\n${compilationErrors.joinToString("\n")}".asFailure()
+        } else {
+            Unit.asSuccess()
         }
+    } catch (e: Exception) {
+        // Don't depend directly on `CompilationException` because it's part of Kotlin plugin
+        // and LivePlugin should be able to run kotlin scripts without it
+        val reason = if (e.javaClass.canonicalName == "org.jetbrains.kotlin.codegen.CompilationException") {
+            "Error compiling script.\n${unscrambleThrowable(e)}"
+        } else {
+            "LivePlugin error while compiling script.\n${unscrambleThrowable(e)}"
+        }
+        reason.asFailure()
+    } catch (e: Error) {
+        "LivePlugin error while compiling script.\n${unscrambleThrowable(e)}".asFailure()
     }
 
     companion object {
         private val compilerClassLoader by lazy {
             UrlClassLoader.build()
-                .files(ideJdkClassesRoots().toList().map(File::toPath) + livePluginKotlinCompilerLibFiles().map(File::toPath))
+                .files(ideJdkClassesRoots().toList() + livePluginKotlinCompilerLibFiles().map(File::toPath))
                 .noPreload()
                 .allowBootstrapResources()
                 .useCache()
                 .get()
         }
+
+        private fun ideJdkClassesRoots() = JavaSdkUtil.getJdkClassesRoots(File(System.getProperty("java.home")).toPath(), true)
     }
 }
 

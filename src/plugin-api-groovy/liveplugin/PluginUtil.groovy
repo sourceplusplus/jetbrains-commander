@@ -571,13 +571,6 @@ class PluginUtil {
 		}
 	}
 
-//	@CanCallFromAnyThread
-//	static showPsiDialog(@NotNull Project project, @Nullable Editor editor = null) {
-//		invokeOnEDT {
-//			new PsiViewerDialog(project, editor).show()
-//		}
-//	}
-
 	/**
 	 * This method exists for reference only.
 	 * For more dialogs see https://github.com/JetBrains/intellij-community/blob/master/platform/platform-api/src/com/intellij/openapi/ui/Messages.java
@@ -723,11 +716,11 @@ class PluginUtil {
 		}
 	}
 
-	static PsiFile findFileByName(String filePath, @NotNull Project project, boolean searchInLibraries = false) {
+	static VirtualFile findFileByName(String filePath, @NotNull Project project, boolean searchInLibraries = false) {
 		FileSearch.findFileByName(filePath, project, searchInLibraries)
 	}
 
-	static List<PsiFile> findAllFilesByName(String filePath, @NotNull Project project, boolean searchInLibraries = false) {
+	static List<VirtualFile> findAllFilesByName(String filePath, @NotNull Project project, boolean searchInLibraries = false) {
 		FileSearch.findAllFilesByName(filePath, project, searchInLibraries)
 	}
 
