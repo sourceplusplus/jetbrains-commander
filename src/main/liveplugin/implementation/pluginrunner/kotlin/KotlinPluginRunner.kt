@@ -170,7 +170,7 @@ private class KotlinPluginCompiler {
     companion object {
         private val compilerClassLoader by lazy {
             UrlClassLoader.build()
-                .files(ideJdkClassesRoots().toList().map(File::toPath) + livePluginKotlinCompilerLibFiles().map(File::toPath))
+                .files(ideJdkClassesRoots().toList() + livePluginKotlinCompilerLibFiles().map(File::toPath))
                 .noPreload()
                 .allowBootstrapResources()
                 .useCache()

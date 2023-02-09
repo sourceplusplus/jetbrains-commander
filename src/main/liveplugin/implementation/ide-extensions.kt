@@ -63,12 +63,9 @@ class LivePluginDeletedListener : BulkFileListener {
 
     private fun handleLivePluginDeleted(event: VFileEvent) {
         val livePlugins = listOf(event).map { event.file!!.toFilePath() }.toLivePlugins()
-        val project = ProjectManager.getInstance().openProjects.find {
-            ProjectRootManager.getInstance(it).fileIndex.isInContent(event.file!!)
-        }
         if (livePlugins.isNotEmpty()) {
             runLaterOnEdt {
-                unloadPlugins(project, livePlugins)
+                unloadPlugins(livePlugins)
                 livePlugins.forEach { plugin ->
                     (livePluginsCompiledPath + plugin.id).toVirtualFile()?.delete()
                 }

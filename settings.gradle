@@ -1,6 +1,6 @@
 pluginManagement {
     plugins {
-        String kotlinVersion = "1.6.10"
+        String kotlinVersion = "1.7.0"
         id 'org.jetbrains.kotlin.jvm' version kotlinVersion apply false
     }
 }

@@ -26,9 +26,9 @@ class UnloadPluginAction: AnAction("Unload Plugin", "Unload live plugin", unload
 
     companion object {
         @JvmStatic fun unloadPlugins(project: Project?, livePlugins: Collection<LivePlugin>) {
-            livePlugins.forEach { Binding.lookup(it, project)?.dispose(project) }
+            livePlugins.forEach { Binding.lookup(it)?.dispose() }
         }
     }
 }
 
-fun LivePlugin.canBeUnloaded(project: Project?) = Binding.lookup(this, project) != null
+fun LivePlugin.canBeUnloaded(project: Project?) = Binding.lookup(this) != null

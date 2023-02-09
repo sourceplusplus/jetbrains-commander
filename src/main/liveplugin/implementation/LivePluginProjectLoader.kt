@@ -11,6 +11,7 @@ import liveplugin.implementation.actions.RunPluginAction
 import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.toFilePath
+import liveplugin.implementation.pluginrunner.PluginRunner
 import spp.jetbrains.plugin.LivePluginService
 import spp.jetbrains.plugin.impl.LivePluginServiceImpl
 import java.io.File
@@ -41,13 +42,13 @@ object LivePluginProjectLoader {
             //load bundled plugins
             val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
             val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
-            RunPluginAction.runPlugins(sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
+            PluginRunner.runPlugins(sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
 
             //load user plugins
             if (project.isTrusted()) {
                 val projectPath = project.basePath?.toFilePath() ?: return@putUserData
                 val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
-                RunPluginAction.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+                PluginRunner.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
             }
         }
     }

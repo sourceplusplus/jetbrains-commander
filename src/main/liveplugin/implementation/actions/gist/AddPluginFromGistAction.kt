@@ -11,7 +11,6 @@ import com.intellij.util.proxy.CommonProxy
 import liveplugin.implementation.LivePluginPaths.livePluginsPath
 import liveplugin.implementation.actions.gist.GistApi.FailedRequest
 import liveplugin.implementation.actions.gist.GistApi.Gist
-import liveplugin.implementation.actions.isNewPluginNameValidator
 import liveplugin.implementation.common.IdeUtil.runLaterOnEdt
 import liveplugin.implementation.common.IdeUtil.showError
 import liveplugin.implementation.common.IdeUtil.showInputDialog
@@ -34,7 +33,7 @@ class AddPluginFromGistAction : AnAction("Copy from Gist", "Copy from Gist", All
             gistUrl,
             project,
             onSuccess = { gist ->
-                val newPluginId = project.showInputDialog(message = "Enter new plugin name:", dialogTitle, isNewPluginNameValidator, gist.description)
+                val newPluginId = null //project.showInputDialog(message = "Enter new plugin name:", dialogTitle, isNewPluginNameValidator, gist.description)
                 if (newPluginId != null) {
                     try {
                         gist.files.forEach { (filename, file) ->

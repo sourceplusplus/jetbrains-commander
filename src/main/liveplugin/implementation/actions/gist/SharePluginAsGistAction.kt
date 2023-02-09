@@ -26,7 +26,6 @@ import kotlinx.coroutines.runBlocking
 import liveplugin.implementation.actions.gist.GistApi.*
 import liveplugin.implementation.common.IdeUtil.runLaterOnEdt
 import liveplugin.implementation.common.IdeUtil.showError
-import liveplugin.implementation.common.livePluginNotificationGroup
 import liveplugin.implementation.livePlugins
 import org.jetbrains.plugins.github.authentication.GithubAuthenticationManager
 import org.jetbrains.plugins.github.authentication.accounts.GithubAccount
@@ -64,12 +63,12 @@ class SharePluginAsGistAction : AnAction("Share as Gist", "Share as plugin files
                         if (dialog.isOpenInBrowser) {
                             BrowserUtil.browse(newGist.htmlUrl)
                         } else {
-                            @Suppress("DEPRECATION")
-                            livePluginNotificationGroup.createNotification(
-                                "Gist created successfully",
-                                HtmlChunk.link(newGist.htmlUrl, "Your gist url").toString(),
-                                INFORMATION
-                            ).setListener(URL_OPENING_LISTENER).notify(project)
+//                            @Suppress("DEPRECATION")
+//                            livePluginNotificationGroup.createNotification(
+//                                "Gist created successfully",
+//                                HtmlChunk.link(newGist.htmlUrl, "Your gist url").toString(),
+//                                INFORMATION
+//                            ).setListener(URL_OPENING_LISTENER).notify(project)
                         }
                     }
                 } catch (e: IOException) {

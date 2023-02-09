@@ -9,6 +9,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.execution.ui.actions.CloseAction
 import com.intellij.icons.AllIcons
+import com.intellij.ide.plugins.PluginUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.actionSystem.*
@@ -63,14 +64,14 @@ object IdeUtil {
             logger.error(consoleTitle, PluginException(text, PluginId.getId(livePluginId)))
         } else {
             ToolWindowManager.getInstance(project).invokeLater {
-                showInConsole(text, consoleTitle, project, ConsoleViewContentType.ERROR_OUTPUT)
+                project.showInConsole(text, consoleTitle, ConsoleViewContentType.ERROR_OUTPUT)
             }
         }
     }
 
     fun Project?.showError(message: String, e: Exception? = null) {
-        livePluginNotificationGroup.createNotification(title = "Live plugin", message, ERROR).notify(this)
-        if (e != null) logger.info(e) // Don't log it as an error because then IJ will show an additional window with stacktrace.
+        //livePluginNotificationGroup.createNotification(title = "Live plugin", message, ERROR).notify(this)
+        if (e != null) logger.error(e) // Don't log it as an error because then IJ will show an additional window with stacktrace.
     }
 
     fun Project?.showInputDialog(message: String, title: String, inputValidator: InputValidatorEx? = null, initialValue: String? = null) =
