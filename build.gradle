@@ -6,11 +6,13 @@ buildscript {
 	}
 }
 plugins {
-	id "org.jetbrains.intellij" version "1.10.1"
-	id "org.jetbrains.kotlin.jvm" version "1.7.0"
-	id "java"
-	id "groovy"
+	id "org.jetbrains.intellij"
+	id "org.jetbrains.kotlin.jvm"
 }
+apply plugin:"java"
+apply plugin:"groovy"
+apply plugin:"idea"
+apply plugin:"org.jetbrains.intellij"
 
 archivesBaseName = "LivePlugin"
 
@@ -20,7 +22,7 @@ repositories {
 
 // Should match Kotlin version bundled with IntelliJ (see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library)
 // If the version is older, it will still work in IJ but is likely to be incompatible with Kotlin plugin which is often one version ahead.
-ext.kotlinVersion = "1.7.0"
+ext.kotlinVersion = "1.7.22"
 // Must match Groovy version bundled with IntelliJ (see IJ/Contents/lib/groovy.jar/META-INF/org.codehaus.groovy.runtime.ExtensionModule)
 ext.groovyVersion = "3.0.13"
 
@@ -64,10 +66,14 @@ dependencies {
 		compileOnly project(":insight")
 		compileOnly project(":marker")
 		compileOnly project(":monitor")
-		compileOnly("plus.sourceplus:protocol:$protocolVersion")
+		compileOnly("plus.sourceplus:protocol:$protocolVersion") {
+			transitive = false
+		}
 	}
 	compileOnly("io.vertx:vertx-core:$vertxVersion")
-	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
+	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion") {
+		transitive = false
+	}
 
 	// Bundle Kotlin compiler and stdlib with LivePlugin because they are not always included into IDEs
 	// and because Kotlin jars in IDE are likely to be updated, potentially breaking liveplugins,
@@ -155,17 +161,17 @@ tasks.register('validateLivePluginZip') {
 		def kotlinCompilerAndItsTransitiveDependencies = [
 			"LivePlugin/kotlin-compiler/annotations-13.0.jar",
 			"LivePlugin/kotlin-compiler/jna-5.6.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.7.22.jar",
 			"LivePlugin/kotlin-compiler/kotlin-compiler-wrapper.jar",
-			"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-reflect-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-stdlib-1.7.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.7.0.jar",
+			"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-reflect-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.7.22.jar",
 			"LivePlugin/kotlin-compiler/trove4j-1.0.20200330.jar",
 			"LivePlugin/lib/http4k-client-okhttp-4.26.0.0.jar",
 			"LivePlugin/lib/http4k-core-4.26.0.0.jar",
