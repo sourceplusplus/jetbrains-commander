@@ -41,7 +41,6 @@ intellij {
 		"Groovy",
 		"Kotlin",
 		"Git4Idea",
-		"org.jetbrains.plugins.github",
 		"junit",
 //		"com.intellij.dev"
 	]
@@ -220,7 +219,7 @@ static expectToBeEqual(Collection actual, Collection expected) {
 
 def "Add source files to compiler output so that LivePlugin source code is available for navigation at runtime"() {
 	compileJava.doLast {
-		def classesFolder = project.tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME).get().destinationDir
+		def classesFolder = (project.tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME).get() as JavaCompile).destinationDir
 		ant.copy(toDir: classesFolder.absolutePath, overwrite: true) {
 			ant.fileset(dir: "./src/plugin-api-groovy", includes: "**/*")
 			ant.fileset(dir: "./src/plugin-api-kotlin", includes: "**/*")
@@ -248,7 +247,7 @@ def "Add source files to compiler output so that LivePlugin source code is avail
 
 def 'Copy GDSL file into standardDsls folder'() {
 	prepareSandbox.doLast {
-		def resourcesFolder = project.tasks.named(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).get().destinationDir
+		def resourcesFolder = (project.tasks.named(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).get() as ProcessResources).destinationDir
 		ant.copy(
 			file: resourcesFolder.absolutePath + "/liveplugin/livePluginCompletions.gdsl",
 			tofile: "build/idea-sandbox/plugins/LivePlugin/lib/standardDsls/livePluginCompletions.gdsl",
