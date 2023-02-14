@@ -1,6 +1,6 @@
 package liveplugin.implementation.actions
 
-import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionUpdateThread.BGT
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -48,6 +48,8 @@ class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIco
         }
     }
 
+    override fun getActionUpdateThread() = BGT
+
     companion object {
         fun pluginNameInActionText(livePlugins: List<LivePlugin>): String =
             when (livePlugins.size) {
@@ -56,6 +58,19 @@ class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIco
                 else -> "Selected Plugins"
             }
     }
+}
+
+class RunPluginTestsAction : AnAction("Run Plugin Tests", "Run plugin integration tests", testPluginIcon), DumbAware {
+    override fun actionPerformed(event: AnActionEvent) {
+        runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
+        runPluginsTests(event.livePlugins(), event)
+    }
+
+    override fun update(event: AnActionEvent) {
+        event.presentation.isEnabled = event.livePlugins().canBeHandledBy(pluginTestRunners)
+    }
+
+    override fun getActionUpdateThread() = BGT
 }
 
 class RunLivePluginsGroup : DefaultActionGroup(
@@ -72,6 +87,7 @@ class RunLivePluginsGroup : DefaultActionGroup(
 
         private class HiddenWhenDisabledAction(private val delegate: AnAction) : AnAction(), DumbAware {
             override fun actionPerformed(event: AnActionEvent) = delegate.actionPerformed(event)
+
             override fun update(event: AnActionEvent) {
                 val presentation = delegate.templatePresentation
                 event.presentation.text = presentation.text
@@ -81,6 +97,8 @@ class RunLivePluginsGroup : DefaultActionGroup(
                 delegate.update(event)
                 if (!event.presentation.isEnabled) event.presentation.isVisible = false
             }
+
+            override fun getActionUpdateThread() = BGT
         }
     }
 

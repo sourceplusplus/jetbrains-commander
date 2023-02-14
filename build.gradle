@@ -6,8 +6,10 @@ buildscript {
 	}
 }
 plugins {
-	id "org.jetbrains.intellij"
-	id "org.jetbrains.kotlin.jvm"
+	id "org.jetbrains.intellij" version "1.10.1"
+	id "org.jetbrains.kotlin.jvm" version "1.8.10"
+	id "java"
+	id "groovy"
 }
 apply plugin:"java"
 apply plugin:"groovy"
@@ -22,7 +24,7 @@ repositories {
 
 // Should match Kotlin version bundled with IntelliJ (see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library)
 // If the version is older, it will still work in IJ but is likely to be incompatible with Kotlin plugin which is often one version ahead.
-ext.kotlinVersion = "1.7.22"
+ext.kotlinVersion = "1.8.10"
 // Must match Groovy version bundled with IntelliJ (see IJ/Contents/lib/groovy.jar/META-INF/org.codehaus.groovy.runtime.ExtensionModule)
 ext.groovyVersion = "3.0.13"
 
@@ -31,7 +33,7 @@ intellij {
 	// and https://www.jetbrains.com/intellij-repository/snapshots
 	version = System.getenv().getOrDefault("IJ_VERSION",
 //		"221.5080.210" // Compatibility with IJ 2022.1 (Groovy 3, Kotlin 1.6, changes in PluginClassLoader https://github.com/dkandalov/live-plugin/issues/123)
-		 "223.7571.182"
+		 "231.6890.12-EAP-SNAPSHOT" // Compatibility with IJ 2023.1 (Kotlin 1.8, changes in PluginClassLoader https://github.com/dkandalov/live-plugin/issues/155)
 	)
 	pluginName = "LivePlugin"
 	downloadSources = true
@@ -121,9 +123,9 @@ sourceSets {
 	test {
 		groovy { srcDir "src/test" }
 		kotlin { srcDir "src/test" }
-		compileClasspath = main.output + pluginApiGroovy.output +
+		compileClasspath = main.output + pluginApiGroovy.output + pluginApiKotlin.output +
 			configurations.testCompileClasspath + configurations.pluginApiGroovyCompileClasspath
-		runtimeClasspath = test.output + main.output + pluginApiGroovy.output +
+		runtimeClasspath = test.output + main.output + pluginApiGroovy.output + pluginApiKotlin.output +
 			configurations.testRuntimeClasspath + configurations.pluginApiGroovyRuntimeClasspath
 	}
 }
@@ -142,8 +144,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 		sourceCompatibility = "17"
 		targetCompatibility = "17"
 		jvmTarget = "17"
-		apiVersion = "1.7"
-		languageVersion = "1.7"
+		apiVersion = "1.8"
+		languageVersion = "1.8"
 		freeCompilerArgs = ["-Xjvm-default=all"] // Added for LivePluginKotlinScriptProvider
 	}
 }
@@ -160,17 +162,17 @@ tasks.register('validateLivePluginZip') {
 		def kotlinCompilerAndItsTransitiveDependencies = [
 			"LivePlugin/kotlin-compiler/annotations-13.0.jar",
 			"LivePlugin/kotlin-compiler/jna-5.6.0.jar",
-			"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-compiler-embeddable-1.8.10.jar",
 			"LivePlugin/kotlin-compiler/kotlin-compiler-wrapper.jar",
-			"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-reflect-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-stdlib-1.7.22.jar",
-			"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.7.22.jar",
+			"LivePlugin/kotlin-compiler/kotlin-daemon-embeddable-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-reflect-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-script-runtime-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-common-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-embeddable-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-compiler-impl-embeddable-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-scripting-jvm-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-1.8.10.jar",
+			"LivePlugin/kotlin-compiler/kotlin-stdlib-common-1.8.10.jar",
 			"LivePlugin/kotlin-compiler/trove4j-1.0.20200330.jar",
 			"LivePlugin/lib/http4k-client-okhttp-4.26.0.0.jar",
 			"LivePlugin/lib/http4k-core-4.26.0.0.jar",
