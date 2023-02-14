@@ -59,20 +59,6 @@ class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIco
             }
     }
 }
-
-class RunPluginTestsAction : AnAction("Run Plugin Tests", "Run plugin integration tests", testPluginIcon), DumbAware {
-    override fun actionPerformed(event: AnActionEvent) {
-        runWriteAction { FileDocumentManager.getInstance().saveAllDocuments() }
-        runPluginsTests(event.livePlugins(), event)
-    }
-
-    override fun update(event: AnActionEvent) {
-        event.presentation.isEnabled = event.livePlugins().canBeHandledBy(pluginTestRunners)
-    }
-
-    override fun getActionUpdateThread() = BGT
-}
-
 class RunLivePluginsGroup : DefaultActionGroup(
     RunPluginAction().hiddenWhenDisabled(),
     UnloadPluginAction().hiddenWhenDisabled(),
