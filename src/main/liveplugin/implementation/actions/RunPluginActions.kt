@@ -59,6 +59,7 @@ class RunPluginAction : AnAction("Load Plugin", "Load live plugin", runPluginIco
             }
     }
 }
+
 class RunLivePluginsGroup : DefaultActionGroup(
     RunPluginAction().hiddenWhenDisabled(),
     UnloadPluginAction().hiddenWhenDisabled(),
