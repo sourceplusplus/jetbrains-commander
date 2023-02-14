@@ -8,8 +8,6 @@ buildscript {
 plugins {
 	id "org.jetbrains.intellij"
 	id "org.jetbrains.kotlin.jvm"
-	id "java"
-	id "groovy"
 }
 apply plugin:"java"
 apply plugin:"groovy"
