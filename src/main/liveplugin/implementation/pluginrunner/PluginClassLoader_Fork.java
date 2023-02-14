@@ -12,6 +12,8 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.ShutDownTracker;
 import com.intellij.util.lang.*;
 import com.intellij.util.ui.EDT;
+import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.CoroutineScopeKt;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +30,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static kotlinx.coroutines.SupervisorKt.SupervisorJob;
 
 /**
  * Fork of com.intellij.ide.plugins.cl.PluginClassLoader
@@ -163,7 +167,7 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
                              @Nullable PluginClassLoader_Fork.ResolveScopeManager resolveScopeManager,
                              @Nullable String packagePrefix,
                              @NotNull List<String> libDirectories) {
-        super(files, classPath);
+        super(classPath);
 
         instanceId = instanceIdProducer.incrementAndGet();
 
@@ -183,6 +187,13 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
     @Override
     public @Nullable String getPackagePrefix() {
         return packagePrefix;
+    }
+
+    private CoroutineScope scope = CoroutineScopeKt.CoroutineScope(SupervisorJob(null));
+
+    @Override
+    public @NotNull CoroutineScope getPluginCoroutineScope() {
+        return scope;
     }
 
     @Override
@@ -580,7 +591,7 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
     }
 
     @Override
-    public @NotNull Enumeration<URL> findResources(@NotNull String name) throws IOException {
+    public @NotNull Enumeration<URL> findResources(@NotNull String name) {
         List<Enumeration<URL>> resources = new ArrayList<>();
         resources.add(classPath.getResources(name));
         for (ClassLoader classloader : getAllParents()) {
