@@ -170,7 +170,7 @@ private class KotlinPluginCompiler {
     companion object {
         private val compilerClassLoader by lazy {
             UrlClassLoader.build()
-                .files(ideJdkClassesRoots().toList() + livePluginKotlinCompilerLibFiles().map(File::toPath))
+                .files(ideJdkClassesRoots() + livePluginKotlinCompilerLibFiles().map(File::toPath))
                 .noPreload()
                 .allowBootstrapResources()
                 .useCache()
@@ -210,8 +210,6 @@ private fun IdeaPluginDescriptor.toLibFiles() =
         // which seem to be compiled with IJ API and are not compatible with actual Kotlin compilers.
         "compiler-plugin" !in it.name
     }.map { it.toFile() }
-
-private fun ideJdkClassesRoots() = JavaSdkUtil.getJdkClassesRoots(File(System.getProperty("java.home")).toPath().toFile(), true)
 
 class SrcHashCode(srcDir: FilePath, compilerOutputDir: FilePath) {
     private val hashFilePath = compilerOutputDir + hashFileName
