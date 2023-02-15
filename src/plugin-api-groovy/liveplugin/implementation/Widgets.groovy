@@ -10,7 +10,7 @@ import com.intellij.openapi.wm.WindowManager
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
-import static com.intellij.openapi.wm.StatusBarWidget.WidgetPresentation
+import static com.intellij.openapi.wm.StatusBarWidget.*
 
 class Widgets {
 	static registerWidget(String widgetId, Disposable disposable,

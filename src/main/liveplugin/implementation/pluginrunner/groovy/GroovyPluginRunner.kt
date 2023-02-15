@@ -92,7 +92,7 @@ class GroovyPluginRunner(
 
     companion object {
         const val groovyScriptFile = "plugin.groovy"
-        const val groovyTestScriptFile = "plugin.groovy"
+        const val groovyTestScriptFile = "plugin-test.groovy"
         const val groovyAddToClasspathKeyword = "// add-to-classpath "
         const val groovyDependsOnPluginKeyword = "// depends-on-plugin "
 

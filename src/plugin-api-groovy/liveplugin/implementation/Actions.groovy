@@ -14,9 +14,6 @@ import com.intellij.openapi.keymap.KeymapManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import liveplugin.PluginUtil
-import liveplugin.implementation.actions.RunPluginAction
-import liveplugin.implementation.actions.UnloadPluginAction
-import liveplugin.implementation.common.IdeUtil
 import liveplugin.implementation.common.IdeUtil
 import liveplugin.implementation.pluginrunner.PluginRunner
 import org.jetbrains.annotations.NotNull
