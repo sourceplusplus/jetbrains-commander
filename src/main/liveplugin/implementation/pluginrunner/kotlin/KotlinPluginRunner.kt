@@ -44,7 +44,6 @@ import kotlin.io.path.absolutePathString
  */
 class KotlinPluginRunner(
     override val scriptName: String,
-    private val loadClazz: String,
     private val systemEnvironment: Map<String, String> = systemEnvironment()
 ): PluginRunner {
     data class ExecutableKotlinPlugin(val pluginClass: Class<*>) : ExecutablePlugin
@@ -83,7 +82,7 @@ class KotlinPluginRunner(
                 additionalClasspath
             val classLoader = createClassLoaderWithDependencies(runtimeClassPath, pluginDescriptorsOfDependencies, plugin)
                 .onFailure { return SetupError(it.reason.message).asFailure() }
-            classLoader.loadClass(loadClazz)
+            classLoader.loadClass("Plugin")
         } catch (e: Throwable) {
             return SetupError("Error while loading plugin class.", e).asFailure()
         }
@@ -108,8 +107,8 @@ class KotlinPluginRunner(
         const val kotlinAddToClasspathKeyword = "// add-to-classpath "
         const val kotlinDependsOnPluginKeyword = "// depends-on-plugin "
 
-        val mainKotlinPluginRunner = KotlinPluginRunner(kotlinScriptFile, "Plugin")
-        val testKotlinPluginRunner = KotlinPluginRunner(kotlinTestScriptFile, "Plugin")
+        val mainKotlinPluginRunner = KotlinPluginRunner(kotlinScriptFile)
+        val testKotlinPluginRunner = KotlinPluginRunner(kotlinTestScriptFile)
     }
 }
 
