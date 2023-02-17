@@ -40,7 +40,6 @@ intellij {
 		"java",
 		"Groovy",
 		"Kotlin",
-		"Git4Idea",
 		"junit",
 //		"com.intellij.dev"
 	]
