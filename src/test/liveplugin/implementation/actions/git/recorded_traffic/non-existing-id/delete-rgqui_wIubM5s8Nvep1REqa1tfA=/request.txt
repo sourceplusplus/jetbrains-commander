@@ -1,4 +1,0 @@
-DELETE non-existing-id HTTP/1.1
-Accept: application/vnd.github.v3+json
-Authorization: Bearer dummy-token
-

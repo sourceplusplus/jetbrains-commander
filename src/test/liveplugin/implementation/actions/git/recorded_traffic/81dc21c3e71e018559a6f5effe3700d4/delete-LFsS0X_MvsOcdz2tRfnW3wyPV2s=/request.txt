@@ -1,4 +1,0 @@
-DELETE 81dc21c3e71e018559a6f5effe3700d4 HTTP/1.1
-Accept: application/vnd.github.v3+json
-Authorization: Bearer dummy-token
-
