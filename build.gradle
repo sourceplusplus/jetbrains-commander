@@ -64,9 +64,7 @@ dependencies {
 		compileOnly project(":insight")
 		compileOnly project(":marker")
 		compileOnly project(":monitor")
-		compileOnly("plus.sourceplus:protocol:$protocolVersion") {
-			transitive = false
-		}
+		compileOnly("plus.sourceplus:protocol:$protocolVersion")
 	}
 	compileOnly("io.vertx:vertx-core:$vertxVersion")
 	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
