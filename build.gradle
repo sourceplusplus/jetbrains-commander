@@ -68,6 +68,7 @@ dependencies {
 	}
 	compileOnly("io.vertx:vertx-core:$vertxVersion")
 	compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
+	compileOnly("org.jooq:joor:$joorVersion")
 
 	// Bundle Kotlin compiler and stdlib with LivePlugin because they are not always included into IDEs
 	// and because Kotlin jars in IDE are likely to be updated, potentially breaking liveplugins,

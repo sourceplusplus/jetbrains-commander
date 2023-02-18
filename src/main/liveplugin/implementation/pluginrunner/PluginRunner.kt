@@ -20,6 +20,7 @@ import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companio
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.mainKotlinPluginRunner
 import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companion.testKotlinPluginRunner
 import org.apache.oro.io.GlobFilenameFilter
+import org.joor.Reflect
 import java.io.File
 import java.io.FileFilter
 import java.nio.file.Path
@@ -78,9 +79,14 @@ object PluginDependencies {
         }.toMutableList() as ArrayList<Path>
         val parentClassLoaders = pluginDescriptors.mapNotNull { it.pluginClassLoader } + PluginRunner::class.java.classLoader
 
+        //todo: shouldn't need to use reflection (compatibility error on 231.7515.13 without)
+        val classPath = Reflect.onClass(ClassPath::class.java)
+            .create(additionalPaths, UrlClassLoader.build(), null, false)
+            .get<ClassPath>()
+
         return PluginClassLoader_Fork(
             additionalPaths,
-            ClassPath(additionalPaths, UrlClassLoader.build(), null, false),
+            classPath,
             parentClassLoaders.toTypedArray(),
             DefaultPluginDescriptor(plugin.id),
             PluginManagerCore::class.java.classLoader,
