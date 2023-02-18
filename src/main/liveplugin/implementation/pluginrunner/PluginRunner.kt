@@ -22,6 +22,7 @@ import liveplugin.implementation.pluginrunner.kotlin.KotlinPluginRunner.Companio
 import org.apache.oro.io.GlobFilenameFilter
 import java.io.File
 import java.io.FileFilter
+import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.exists
 
@@ -74,7 +75,7 @@ object PluginDependencies {
     ): Result<ClassLoader, SetupError> {
         val additionalPaths = additionalClasspath.map { file -> file.toPath() }.onEach { path ->
             if (!path.exists()) return SetupError("Didn't find plugin dependency '${path.toFile().absolutePath}'.").asFailure()
-        }
+        }.toMutableList() as ArrayList<Path>
         val parentClassLoaders = pluginDescriptors.mapNotNull { it.pluginClassLoader } + PluginRunner::class.java.classLoader
 
         return PluginClassLoader_Fork(
