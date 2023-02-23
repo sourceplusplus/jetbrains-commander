@@ -64,7 +64,7 @@ class ViewTracesCommand(
     }
 
     private fun consumerCreator(traceWindow: LiveTraceWindow): MessageConsumer<JsonObject> {
-        val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress("system"))
+        val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(selfInfo.developer.id))
         consumer.handler {
             val liveViewEvent = LiveViewEvent(it.body())
             if (liveViewEvent.subscriptionId != traceWindow.liveView.subscriptionId) return@handler

@@ -65,9 +65,7 @@ class ViewLogsCommand(
     private fun consumerCreator(
         logWindow: LiveLogWindow
     ): MessageConsumer<JsonObject> {
-        val consumer = vertx.eventBus().consumer<JsonObject>(
-            toLiveViewSubscriberAddress("system")
-        )
+        val consumer = vertx.eventBus().consumer<JsonObject>(toLiveViewSubscriberAddress(selfInfo.developer.id))
         consumer.handler {
             val liveViewEvent = LiveViewEvent(it.body())
             if (liveViewEvent.subscriptionId != logWindow.liveView.subscriptionId) return@handler
