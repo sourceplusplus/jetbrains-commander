@@ -24,7 +24,14 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             return
         }
 
-        val className = context.artifactQualifiedName.toClass()!!.identifier
+        //determine the object we're going to monitor
+        val className = context.artifactQualifiedName.toClass()?.identifier
+        if (className == null) {
+            log.warn("Could not determine class name")
+            return
+        }
+
+        //create a meter that increments every time the object is created
         val id = "${className.replace(".", "-")}-lifespan"
         val countMeter = LiveMeter(
             MeterType.COUNT,
@@ -52,6 +59,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
         ).await()
         instrumentService!!.addLiveInstrument(countMeter).await()
 
+        //create a meter that tracks the total time the object is alive
         val totalTimeMeter = LiveMeter(
             MeterType.COUNT,
             MetricValue(MetricValueType.OBJECT_LIFESPAN, "0"),
@@ -76,8 +84,9 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
                 }
             )
         ).await()
-        instrumentService.addLiveInstrument(totalTimeMeter).await()
+        instrumentService!!.addLiveInstrument(totalTimeMeter).await()
 
+        //create a meter that calculates the average lifespan (total time / count)
         val avgMeterId = "$id-avg".replace("-", "_")
         viewService.saveRuleIfAbsent(
             LiveViewRule(
