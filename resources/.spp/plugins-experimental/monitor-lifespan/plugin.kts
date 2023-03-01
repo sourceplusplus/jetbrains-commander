@@ -18,7 +18,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             "My custom live command" + "</span></html>"
 
     override suspend fun triggerSuspend(context: LiveCommandContext) {
-        val service = skywalkingMonitorService.getCurrentService()
+        val service = statusService.getCurrentService()
         if (service == null) {
             log.warn("No service selected")
             return
