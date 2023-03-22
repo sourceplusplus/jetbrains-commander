@@ -37,7 +37,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             MeterType.COUNT,
             MetricValue(MetricValueType.NUMBER, "1"),
             location = LiveSourceLocation(
-                context.artifactQualifiedName.toClass()!!.identifier + ".<init>()",
+                context.artifactQualifiedName.toClass()!!.identifier + ".<init>(...)",
                 service = service.name
             ),
             id = "$id-count",
@@ -64,7 +64,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             MeterType.COUNT,
             MetricValue(MetricValueType.OBJECT_LIFESPAN, "0"),
             location = LiveSourceLocation(
-                context.artifactQualifiedName.toClass()!!.identifier,
+                context.artifactQualifiedName.toClass()!!.identifier + ".<init>(...)",
                 service = service.name
             ),
             id = "$id-total",
