@@ -13,6 +13,8 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.util.lang.ClassPath
 import com.intellij.util.lang.UrlClassLoader
+import io.vertx.core.Future
+import io.vertx.core.Promise
 import liveplugin.implementation.LivePlugin
 import liveplugin.implementation.common.*
 import liveplugin.implementation.pluginrunner.groovy.GroovyPluginRunner.Companion.mainGroovyPluginRunner
@@ -35,8 +37,11 @@ interface PluginRunner {
     fun run(executablePlugin: ExecutablePlugin, binding: Binding): Result<Unit, RunningError>
 
     companion object {
-        @JvmStatic fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
-            livePlugins.forEach { it.runWith(pluginRunners, event) }
+        @JvmStatic
+        fun runPlugins(livePlugins: Collection<LivePlugin>, event: AnActionEvent): List<Future<Any?>> {
+            val futures = mutableListOf<Future<Any?>>()
+            livePlugins.forEach { futures.add(it.runWith(pluginRunners, event)) }
+            return futures
         }
 
         @JvmStatic fun runPluginsTests(livePlugins: Collection<LivePlugin>, event: AnActionEvent) {
@@ -161,17 +166,23 @@ object PluginDependencies {
     }
 }
 
-private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActionEvent) {
-    val project = event.project
+private fun LivePlugin.runWith(pluginRunners: List<PluginRunner>, event: AnActionEvent): Future<Any?> {
+    val project = event.project ?: throw IllegalStateException("No project found for action event: $event")
     val binding = Binding.create(this, event)
     val pluginRunner = pluginRunners.find { path.find(it.scriptName) != null }
-        ?: return displayError(id, SetupError(message = "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"), project)
+    if (pluginRunner == null) {
+        displayError(id, SetupError( "Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}"), project)
+        return Future.failedFuture("Startup script was not found. Tried: ${pluginRunners.map { it.scriptName }}")
+    }
 
+    val promise = Promise.promise<Any?>()
     runInBackground(project, "Running live-plugin '$id'") {
         pluginRunner.setup(this, project)
             .flatMap { IdeUtil.runOnEdt { pluginRunner.run(it, binding) } }
             .peekFailure { displayError(id, it, project) }
+        promise.complete()
     }
+    return promise.future()
 }
 
 private fun runInBackground(project: Project?, taskDescription: String, function: () -> Any) {

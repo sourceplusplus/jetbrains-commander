@@ -7,13 +7,15 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
-import liveplugin.implementation.actions.RunPluginAction
+import io.vertx.core.CompositeFuture
 import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.toFilePath
 import liveplugin.implementation.pluginrunner.PluginRunner
 import spp.jetbrains.plugin.LivePluginService
 import spp.jetbrains.plugin.impl.LivePluginServiceImpl
+import spp.jetbrains.status.SourceStatus
+import spp.jetbrains.status.SourceStatusService
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -42,13 +44,19 @@ object LivePluginProjectLoader {
             //load bundled plugins
             val dataContext = MapDataContext(mapOf(CommonDataKeys.PROJECT.name to project))
             val dummyEvent = AnActionEvent(null, dataContext, "", Presentation(), ActionManager.getInstance(), 0)
-            PluginRunner.runPlugins(sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent)
+            val plugins = PluginRunner.runPlugins(
+                sppPluginsLocation.toFilePath().listFiles().toLivePlugins(), dummyEvent
+            ).toMutableList()
 
             //load user plugins
             if (project.isTrusted()) {
                 val projectPath = project.basePath?.toFilePath() ?: return@putUserData
                 val liveCommandsPath = projectPath + LivePluginPaths.livePluginsProjectDirName
-                PluginRunner.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+                plugins += PluginRunner.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
+            }
+
+            CompositeFuture.all(plugins).onSuccess { _ ->
+                SourceStatusService.getInstance(dummyEvent.project!!).update(SourceStatus.PluginsLoaded)
             }
         }
     }
