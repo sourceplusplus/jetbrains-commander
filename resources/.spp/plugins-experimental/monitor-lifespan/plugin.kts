@@ -9,7 +9,7 @@ import spp.protocol.instrument.location.LiveSourceLocation
 import spp.protocol.instrument.meter.MeterType
 import spp.protocol.instrument.meter.MetricValue
 import spp.protocol.instrument.meter.MetricValueType
-import spp.protocol.view.rule.LiveViewRule
+import spp.protocol.view.rule.ViewRule
 
 class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
 
@@ -45,7 +45,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             meta = mapOf("metric.mode" to "RATE")
         )
         viewService.saveRuleIfAbsent(
-            LiveViewRule(
+            ViewRule(
                 name = countMeter.toMetricIdWithoutPrefix(),
                 exp = buildString {
                     append("(")
@@ -72,7 +72,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
             meta = mapOf("metric.mode" to "RATE")
         )
         viewService.saveRuleIfAbsent(
-            LiveViewRule(
+            ViewRule(
                 name = totalTimeMeter.toMetricIdWithoutPrefix(),
                 exp = buildString {
                     append("(")
@@ -89,7 +89,7 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
         //create a rule that calculates the average lifespan (total time / count)
         val avgMeterId = "$id-avg".replace("-", "_")
         viewService.saveRuleIfAbsent(
-            LiveViewRule(
+            ViewRule(
                 name = avgMeterId,
                 exp = buildString {
                     append("(")
