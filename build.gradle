@@ -52,18 +52,14 @@ var protocolVersion = project.properties["protocolVersion"] as String ?: project
 dependencies {
 	if (findProject(":interfaces:jetbrains") != null) {
 		compileOnly project(":interfaces:jetbrains:commander:kotlin-compiler-wrapper")
-		compileOnly project(":interfaces:jetbrains:common")
 		compileOnly project(":interfaces:jetbrains:core")
 		compileOnly project(":interfaces:jetbrains:insight")
 		compileOnly project(":interfaces:jetbrains:marker")
-		compileOnly project(":interfaces:jetbrains:monitor")
 		compileOnly project(":protocol")
 	} else {
-		compileOnly project(":common")
 		compileOnly project(":core")
 		compileOnly project(":insight")
 		compileOnly project(":marker")
-		compileOnly project(":monitor")
 		compileOnly("plus.sourceplus:protocol:$protocolVersion")
 	}
 	compileOnly("io.vertx:vertx-core:$vertxVersion")

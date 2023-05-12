@@ -12,8 +12,8 @@ import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.toFilePath
 import liveplugin.implementation.pluginrunner.PluginRunner
-import spp.jetbrains.plugin.LivePluginService
-import spp.jetbrains.plugin.impl.LivePluginServiceImpl
+import spp.jetbrains.marker.plugin.LivePluginService
+import spp.jetbrains.marker.plugin.impl.LivePluginServiceImpl
 import spp.jetbrains.status.SourceStatus
 import spp.jetbrains.status.SourceStatusService
 import java.io.File

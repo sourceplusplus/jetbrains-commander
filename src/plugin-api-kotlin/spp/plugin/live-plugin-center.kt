@@ -6,12 +6,12 @@ import com.intellij.openapi.util.IconLoader
 import io.vertx.core.Vertx
 import liveplugin.implementation.pluginrunner.kotlin.LivePluginScript
 import spp.jetbrains.UserData
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.guide.GuideMark
-import spp.jetbrains.plugin.LivePluginService
+import spp.jetbrains.marker.plugin.LivePluginService
 import java.io.File
 import javax.swing.Icon
 
