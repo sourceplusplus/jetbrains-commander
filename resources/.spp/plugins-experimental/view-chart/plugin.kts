@@ -16,11 +16,11 @@
  */
 import com.intellij.openapi.project.Project
 import io.vertx.kotlin.coroutines.await
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveLocationContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveLocationContext
 import spp.jetbrains.status.SourceStatusService
-import spp.jetbrains.view.LiveViewChartManager
+import spp.jetbrains.view.manager.LiveViewChartManager
 import spp.plugin.*
 import spp.protocol.artifact.metrics.MetricType
 

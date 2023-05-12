@@ -17,8 +17,9 @@
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.SourceKey
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.ExpressionSourceMark
@@ -146,13 +147,13 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         val service = statusService.getCurrentService() ?: return emptyList()
-        val failingEndpoints = skywalkingMonitorService.sortMetrics(
+        val failingEndpoints = viewService.getHistoricalMetrics(
             TopNCondition(
                 Endpoint_SLA.metricId,
                 service.name,
                 true,
                 Scope.Endpoint,
-                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
+                ceil(managementService.getEndpoints(service.id, 1000).await().size * 0.20).toInt(), //top 20%
                 Order.ASC
             ), duration
         )

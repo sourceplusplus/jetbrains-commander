@@ -27,7 +27,7 @@ import io.vertx.kotlin.coroutines.await
 import net.miginfocom.swing.MigLayout
 import spp.jetbrains.SourceKey
 import spp.jetbrains.artifact.service.ArtifactTypeService
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.SourceMarkerUtils
 import spp.jetbrains.marker.service.ArtifactNamingService
 import spp.jetbrains.marker.service.SourceGuideProvider

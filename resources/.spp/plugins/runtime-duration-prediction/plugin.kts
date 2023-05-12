@@ -23,7 +23,7 @@ import com.intellij.ui.SimpleTextAttributes
 import spp.jetbrains.PluginBundle
 import spp.jetbrains.PluginUI
 import spp.jetbrains.SourceKey
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.insight.InsightKeys.FUNCTION_DURATION
 import spp.jetbrains.insight.InsightKeys.FUNCTION_DURATION_PREDICTION
 import spp.jetbrains.marker.service.ArtifactCreationService

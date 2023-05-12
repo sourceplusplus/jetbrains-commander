@@ -18,7 +18,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.SourceKey
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.ExpressionSourceMark
@@ -146,18 +146,19 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         val startTime = endTime.minusMinutes(2)
         val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         val service = statusService.getCurrentService() ?: return emptyList()
-        val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
-            TopNCondition(
-                Endpoint_CPM.metricId,
-                service.name,
-                true,
-                Scope.Endpoint,
-                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
-                Order.DES
-            ), duration
-        )
-
-        return highLoadEndpoints.map { (it as JsonObject) }
+        return emptyList()
+//        val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
+//            TopNCondition(
+//                Endpoint_CPM.metricId,
+//                service.name,
+//                true,
+//                Scope.Endpoint,
+//                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
+//                Order.DES
+//            ), duration
+//        )
+//
+//        return highLoadEndpoints.map { (it as JsonObject) }
     }
 }
 

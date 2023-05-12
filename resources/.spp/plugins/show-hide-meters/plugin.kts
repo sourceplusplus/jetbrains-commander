@@ -16,9 +16,9 @@
  */
 import com.intellij.openapi.project.Project
 import spp.jetbrains.PluginUI.commandTypeColor
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveLocationContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveLocationContext
 import spp.jetbrains.marker.SourceMarker
 import spp.jetbrains.marker.SourceMarkerKeys
 import spp.plugin.*

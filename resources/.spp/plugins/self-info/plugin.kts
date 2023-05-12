@@ -18,8 +18,8 @@ import com.intellij.openapi.project.Project
 import liveplugin.PluginUtil.showInConsole
 import liveplugin.implementation.Console
 import spp.jetbrains.PluginUI.commandTypeColor
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
 import spp.plugin.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

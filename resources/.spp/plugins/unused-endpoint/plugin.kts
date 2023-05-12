@@ -16,7 +16,7 @@
  */
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import spp.jetbrains.indicator.LiveIndicator
+import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.info.EndpointDetector
 import spp.jetbrains.marker.source.mark.api.ExpressionSourceMark

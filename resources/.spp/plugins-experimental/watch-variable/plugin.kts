@@ -19,9 +19,9 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import io.vertx.core.json.JsonObject
 import spp.jetbrains.PluginUI.commandTypeColor
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveLocationContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveLocationContext
 import spp.jetbrains.marker.service.ArtifactCreationService
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.inlay.config.InlayMarkVirtualText

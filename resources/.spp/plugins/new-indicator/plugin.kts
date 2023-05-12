@@ -24,8 +24,8 @@ import com.intellij.util.PsiNavigateUtil
 import liveplugin.implementation.common.IdeUtil
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandTypeColor
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
 import spp.plugin.*
 
 class NewIndicatorCommand(project: Project) : LiveCommand(project) {

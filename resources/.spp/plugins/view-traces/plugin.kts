@@ -21,11 +21,11 @@ import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandHighlightColor
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.artifact.service.ArtifactScopeService
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
-import spp.jetbrains.command.LiveLocationContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveLocationContext
 import spp.jetbrains.marker.source.info.EndpointDetector
-import spp.jetbrains.view.LiveViewTraceManager
+import spp.jetbrains.view.manager.LiveViewTraceManager
 import spp.jetbrains.view.window.LiveTraceWindow
 import spp.plugin.*
 import spp.protocol.artifact.trace.Trace

@@ -26,6 +26,8 @@ import spp.jetbrains.*
 import spp.jetbrains.PluginBundle.message
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.*
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
 import spp.plugin.*
 
 class NewCommandCommand(project: Project) : LiveCommand(project) {

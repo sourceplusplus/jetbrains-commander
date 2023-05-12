@@ -18,8 +18,8 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.PluginUI.commandTypeColor
-import spp.jetbrains.command.LiveCommand
-import spp.jetbrains.command.LiveCommandContext
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
 import spp.plugin.*
 import java.time.*
 import java.time.format.DateTimeFormatter

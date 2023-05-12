@@ -20,6 +20,8 @@ import liveplugin.PluginUtil.showInConsole
 import liveplugin.implementation.Console
 import spp.jetbrains.PluginUI.commandTypeColor
 import spp.jetbrains.command.*
+import spp.jetbrains.marker.command.LiveCommand
+import spp.jetbrains.marker.command.LiveCommandContext
 import spp.plugin.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
