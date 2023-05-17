@@ -16,7 +16,7 @@
  */
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.SourceKey
 import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
@@ -29,13 +29,12 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
-import spp.jetbrains.monitor.skywalking.model.DurationStep
-import spp.jetbrains.monitor.skywalking.model.TopNCondition
-import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
-import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
-import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
+import spp.protocol.artifact.metrics.MetricStep
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime_AVG
+import spp.protocol.platform.general.Order
+import spp.protocol.platform.general.Scope
+import spp.protocol.platform.general.SelectedRecord
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -57,14 +56,14 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
 
         //trigger adds
         currentSlowest.forEach {
-            val endpointName = it.getString("name")
-            val respTime = it.getString("value").toFloat()
+            val endpointName = it.name
+            val respTime = it.value.toFloat()
             val startIndicator = !slowEndpoints.containsKey(endpointName)
 
             if (log.isTraceEnabled) log.trace("Endpoint $endpointName is slow. Resp time: $respTime")
             findByEndpointName(endpointName)?.let { guideMark ->
                 slowEndpoints[endpointName] = guideMark
-                guideMark.putUserDataIfAbsent(RESP_TIME, hashMapOf<String, Float>())
+                guideMark.putUserDataIfAbsent(RESP_TIME, hashMapOf())
                 guideMark.getUserData(RESP_TIME)!![endpointName] = respTime
 
                 if (startIndicator) {
@@ -75,7 +74,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
 
         //trigger removes
         val previousSlowest = slowEndpoints.filter {
-            !currentSlowest.map { it.getString("name") }.contains(it.key)
+            !currentSlowest.map { it.name }.contains(it.key)
         }
         previousSlowest.forEach {
             log.debug("Endpoint ${it.key} is no longer slow")
@@ -140,24 +139,22 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
     }
 
-    private suspend fun getTopSlowEndpoints(): List<JsonObject> {
+    private suspend fun getTopSlowEndpoints(): List<SelectedRecord> {
         if (log.isTraceEnabled) log.trace("Getting top slow endpoints")
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
-        val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         val service = statusService.getCurrentService() ?: return emptyList()
-        val slowestEndpoints = skywalkingMonitorService.sortMetrics(
-            TopNCondition(
-                Endpoint_RespTime_AVG.metricId,
-                service.name,
-                true,
-                Scope.Endpoint,
-                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
-                Order.DES
-            ), duration
-        )
-
-        return slowestEndpoints.map { (it as JsonObject) }
+        return managementService.sortMetrics(
+            Endpoint_RespTime_AVG.metricId,
+            service.name,
+            true,
+            Scope.Endpoint,
+            ceil(managementService.getEndpoints(service.id, 1000).await().size * 0.20).toInt(), //top 20%
+            Order.DES,
+            MetricStep.MINUTE,
+            startTime.toInstant(),
+            endTime.toInstant()
+        ).await()
     }
 }
 

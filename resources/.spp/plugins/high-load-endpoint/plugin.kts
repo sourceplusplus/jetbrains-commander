@@ -16,7 +16,7 @@
  */
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.coroutines.await
 import spp.jetbrains.SourceKey
 import spp.jetbrains.marker.indicator.LiveIndicator
 import spp.jetbrains.marker.service.ArtifactCreationService
@@ -29,13 +29,12 @@ import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode
 import spp.jetbrains.marker.source.mark.api.event.SourceMarkEventCode.MARK_USER_DATA_UPDATED
 import spp.jetbrains.marker.source.mark.guide.GuideMark
 import spp.jetbrains.marker.source.mark.gutter.GutterMark
-import spp.jetbrains.monitor.skywalking.model.DurationStep
-import spp.jetbrains.monitor.skywalking.model.TopNCondition
-import spp.jetbrains.monitor.skywalking.model.TopNCondition.Order
-import spp.jetbrains.monitor.skywalking.model.TopNCondition.Scope
-import spp.jetbrains.monitor.skywalking.model.ZonedDuration
 import spp.plugin.*
+import spp.protocol.artifact.metrics.MetricStep
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
+import spp.protocol.platform.general.Order
+import spp.protocol.platform.general.Scope
+import spp.protocol.platform.general.SelectedRecord
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -57,14 +56,14 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
 
         //trigger adds
         currentHighLoads.forEach {
-            val endpointName = it.getString("name")
-            val cpm = it.getString("value").toFloat().toInt()
+            val endpointName = it.name
+            val cpm = it.value.toFloat().toInt()
             val startIndicator = !highLoadEndpoints.containsKey(endpointName)
 
             if (log.isTraceEnabled) log.trace("Endpoint $endpointName is high load. Calls per minute: $cpm")
             findByEndpointName(endpointName)?.let { guideMark ->
                 highLoadEndpoints[endpointName] = guideMark
-                guideMark.putUserDataIfAbsent(CPM, hashMapOf<String, Int>())
+                guideMark.putUserDataIfAbsent(CPM, hashMapOf())
                 guideMark.getUserData(CPM)!![endpointName] = cpm
 
                 if (startIndicator) {
@@ -75,7 +74,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
 
         //trigger removes
         val previousHighLoads = highLoadEndpoints.filter {
-            !currentHighLoads.map { it.getString("name") }.contains(it.key)
+            !currentHighLoads.map { it.name }.contains(it.key)
         }
         previousHighLoads.forEach {
             log.debug("Endpoint ${it.key} is no longer high load")
@@ -140,25 +139,22 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
     }
 
-    private suspend fun getHighLoadEndpoints(): List<JsonObject> {
+    private suspend fun getHighLoadEndpoints(): List<SelectedRecord> {
         if (log.isTraceEnabled) log.trace("Getting high load endpoints")
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
-        val duration = ZonedDuration(startTime, endTime, DurationStep.MINUTE)
         val service = statusService.getCurrentService() ?: return emptyList()
-        return emptyList()
-//        val highLoadEndpoints = skywalkingMonitorService.sortMetrics(
-//            TopNCondition(
-//                Endpoint_CPM.metricId,
-//                service.name,
-//                true,
-//                Scope.Endpoint,
-//                ceil(skywalkingMonitorService.getEndpoints(service.id, 1000).size() * 0.20).toInt(), //top 20%
-//                Order.DES
-//            ), duration
-//        )
-//
-//        return highLoadEndpoints.map { (it as JsonObject) }
+        return managementService.sortMetrics(
+            Endpoint_CPM.metricId,
+            service.name,
+            true,
+            Scope.Endpoint,
+            ceil(managementService.getEndpoints(service.id, 1000).await().size * 0.20).toInt(), //top 20%
+            Order.DES,
+            MetricStep.MINUTE,
+            startTime.toInstant(),
+            endTime.toInstant()
+        ).await()
     }
 }
 
