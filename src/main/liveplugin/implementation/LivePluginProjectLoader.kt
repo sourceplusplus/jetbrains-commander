@@ -29,7 +29,6 @@ import java.util.jar.JarFile
 object LivePluginProjectLoader {
 
     fun projectOpened(project: Project) {
-        @Suppress("UnstableApiUsage")
         if (project.getUserData(LivePluginService.KEY) != null) return
         val sppPluginsLocation = if (project.getUserData(LivePluginService.SPP_PLUGINS_LOCATION) == null) {
             val sppPluginsLocation = File(extractSppResources(), "plugins")
