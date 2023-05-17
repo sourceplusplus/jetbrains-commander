@@ -36,7 +36,7 @@ class ViewChartCommand(
         val chartName = context.args.joinToString("_").lowercase()
         val metricType = MetricType.fromBestGuess(chartName)
         val serviceInstance = managementService.getInstances(
-            skywalkingMonitorService.getCurrentService()!!.id
+            statusService.getCurrentService()!!.id
         ).await().first()
         LiveViewChartManager.getInstance(project).showChart(
             serviceInstance.id,
