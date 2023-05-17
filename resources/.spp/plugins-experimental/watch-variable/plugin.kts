@@ -30,7 +30,6 @@ import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.instrument.LiveBreakpoint
 import spp.protocol.instrument.event.LiveBreakpointHit
 import spp.protocol.instrument.event.LiveInstrumentEvent
-import spp.protocol.instrument.event.LiveInstrumentEventType.BREAKPOINT_HIT
 import spp.protocol.instrument.location.LiveSourceLocation
 import spp.protocol.instrument.throttle.InstrumentThrottle
 import spp.protocol.instrument.throttle.ThrottleStep.SECOND
@@ -86,11 +85,10 @@ class WatchVariableCommand(project: Project) : LiveCommand(project) {
         }
 
         consumer.handler {
-            val liveEvent = LiveInstrumentEvent(it.body())
-            if (liveEvent.eventType == BREAKPOINT_HIT) {
-                val bpHit = LiveBreakpointHit(JsonObject(liveEvent.data))
-                if (bpHit.breakpointId == instrumentId) {
-                    val liveVariables = bpHit.stackTrace.first().variables
+            val liveEvent = LiveInstrumentEvent.fromJson(it.body())
+            if (liveEvent is LiveBreakpointHit) {
+                if (liveEvent.instrument.id == instrumentId) {
+                    val liveVariables = liveEvent.stackTrace.first().variables
                     val liveVar = liveVariables.find { it.name == variableName }
                     if (liveVar != null) {
                         virtualText.updateVirtualText(" // Live value: " + liveVar.value)
