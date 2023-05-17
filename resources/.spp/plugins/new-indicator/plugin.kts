@@ -57,7 +57,7 @@ class NewIndicatorCommand(project: Project) : LiveCommand(project) {
         val properIndicatorName = indicatorName.split(" ", "-").map { it.capitalize() }.joinToString("")
         return """
             import com.intellij.openapi.project.Project
-            import spp.jetbrains.indicator.LiveIndicator
+            import spp.jetbrains.marker.indicator.LiveIndicator
             import spp.jetbrains.marker.source.mark.api.event.SourceMarkEvent
             import spp.jetbrains.marker.source.mark.guide.GuideMark
             import spp.plugin.*
