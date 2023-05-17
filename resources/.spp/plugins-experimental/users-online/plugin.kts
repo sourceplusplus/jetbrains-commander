@@ -66,11 +66,6 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
 
     //todo: dynamic LiveSourceLocations
     override suspend fun onRegister() {
-        val instrumentService = super.instrumentService
-        if (instrumentService == null) {
-            log.warn("Instrument service is not available. UsersOnlineIndicator will not be registered.")
-            return
-        }
         SourceGuideProvider.addProvider(this, SourceMarkerUtils.getJvmLanguages())
 
         //get or add count meter to log in method
