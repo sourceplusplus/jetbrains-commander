@@ -40,24 +40,25 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
                 context.artifactQualifiedName.toClass()!!.identifier + ".<init>(...)",
                 service = service.name
             ),
-            id = "$id-count",
+            id = "${id}_count",
             applyImmediately = true,
             meta = mapOf("metric.mode" to "RATE")
         )
         viewService.saveRuleIfAbsent(
             ViewRule(
-                name = countMeter.toMetricIdWithoutPrefix(),
+                name = countMeter.id!!,
                 exp = buildString {
                     append("(")
-                    append(countMeter.toMetricIdWithoutPrefix())
+                    append(countMeter.id!!)
                     append(".sum(['service', 'instance'])")
                     append(".downsampling(SUM)")
                     append(")")
                     append(".instance(['service'], ['instance'], Layer.GENERAL)")
-                }
+                },
+                meterIds = listOf(countMeter.id!!)
             )
         ).await()
-        instrumentService!!.addLiveInstrument(countMeter).await()
+        instrumentService.addLiveInstrument(countMeter).await()
 
         //create a live meter & rule that tracks the total time the object is alive
         val totalTimeMeter = LiveMeter(
@@ -73,18 +74,19 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
         )
         viewService.saveRuleIfAbsent(
             ViewRule(
-                name = totalTimeMeter.toMetricIdWithoutPrefix(),
+                name = totalTimeMeter.id!!,
                 exp = buildString {
                     append("(")
-                    append(totalTimeMeter.toMetricIdWithoutPrefix())
+                    append(totalTimeMeter.id)
                     append(".sum(['service', 'instance'])")
                     append(".downsampling(SUM)")
                     append(")")
                     append(".instance(['service'], ['instance'], Layer.GENERAL)")
-                }
+                },
+                meterIds = listOf(totalTimeMeter.id!!)
             )
         ).await()
-        instrumentService!!.addLiveInstrument(totalTimeMeter).await()
+        instrumentService.addLiveInstrument(totalTimeMeter).await()
 
         //create a rule that calculates the average lifespan (total time / count)
         val avgMeterId = "$id-avg".replace("-", "_")
@@ -93,12 +95,13 @@ class MonitorLifespanCommand(project: Project) : LiveCommand(project) {
                 name = avgMeterId,
                 exp = buildString {
                     append("(")
-                    append(totalTimeMeter.toMetricIdWithoutPrefix())
+                    append(totalTimeMeter.id)
                     append("/")
-                    append(countMeter.toMetricIdWithoutPrefix())
+                    append(countMeter.id)
                     append(").downsampling(LATEST)")
                     append(".instance(['service'], ['instance'], Layer.GENERAL)")
-                }
+                },
+                meterIds = listOf(totalTimeMeter.id!!, countMeter.id!!)
             )
         ).await()
 

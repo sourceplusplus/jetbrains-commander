@@ -69,41 +69,41 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
         SourceGuideProvider.addProvider(this, SourceMarkerUtils.getJvmLanguages())
 
         //get or add count meter to log in method
-        var logInCountMeter = instrumentService.getLiveInstrumentById("user-login-count").await()
+        var logInCountMeter = instrumentService.getLiveInstrument("spp_user_login_count").await()
         if (logInCountMeter !is LiveMeter) {
             logInCountMeter = instrumentService.addLiveMeter(
                 LiveMeter(
                     MeterType.COUNT,
                     MetricValue(MetricValueType.NUMBER, "1"),
                     location = LiveSourceLocation("spp.example.webapp.demo.UsersOnlineIndicator", 45),
-                    id = "user-login-count"
+                    id = "spp_user_login_count"
                     //todo: viewConfig = limit to today only
                 )
             ).await()
         }
 
         //get or add last login username gauge to log in method
-        var latestLoginGaugeMeter = instrumentService.getLiveInstrumentById("latest-login-gauge").await()
+        var latestLoginGaugeMeter = instrumentService.getLiveInstrument("spp_latest_login_gauge").await()
         if (latestLoginGaugeMeter !is LiveMeter) {
             latestLoginGaugeMeter = instrumentService.addLiveMeter(
                 LiveMeter(
                     MeterType.GAUGE,
                     MetricValue(MetricValueType.VALUE_EXPRESSION, "localVariables[user].username"),
                     location = LiveSourceLocation("spp.example.webapp.demo.UsersOnlineIndicator", 46),
-                    id = "latest-login-gauge"
+                    id = "spp_latest_login_gauge"
                 )
             ).await()
         }
 
         //get or add gauge meter to log out method
-        var onlineGaugeMeter = instrumentService.getLiveInstrumentById("users-online-gauge").await()
+        var onlineGaugeMeter = instrumentService.getLiveInstrument("spp_users_online_gauge").await()
         if (onlineGaugeMeter !is LiveMeter) {
             onlineGaugeMeter = instrumentService.addLiveMeter(
                 LiveMeter(
                     MeterType.GAUGE,
                     MetricValue(MetricValueType.NUMBER_EXPRESSION, "fields[onlineUsers].size()"),
                     location = LiveSourceLocation("spp.example.webapp.demo.UsersOnlineIndicator", 51),
-                    id = "users-online-gauge"
+                    id = "spp_users_online_gauge"
                 )
             ).await()
         }
@@ -112,16 +112,16 @@ class UsersOnlineIndicator(project: Project) : LiveIndicator(project), AbstractS
         usersOnlineSubscription = viewService.addLiveView(
             LiveView(
                 entityIds = mutableSetOf(
-                    logInCountMeter.toMetricId(),
-                    latestLoginGaugeMeter.toMetricId(),
-                    onlineGaugeMeter.toMetricId()
+                    logInCountMeter.id!!,
+                    latestLoginGaugeMeter.id!!,
+                    onlineGaugeMeter.id!!
                 ),
                 viewConfig = LiveViewConfig(
                     "users-online-indicator",
                     listOf(
-                        logInCountMeter.toMetricId(),
-                        latestLoginGaugeMeter.toMetricId(),
-                        onlineGaugeMeter.toMetricId()
+                        logInCountMeter.id!!,
+                        latestLoginGaugeMeter.id!!,
+                        onlineGaugeMeter.id!!
                     )
                 )
             )
