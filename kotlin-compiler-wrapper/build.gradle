@@ -7,7 +7,7 @@ repositories {
     mavenCentral()
 }
 
-ext.kotlinVersion = "1.8.21"
+ext.kotlinVersion = "1.8.22"
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion"
