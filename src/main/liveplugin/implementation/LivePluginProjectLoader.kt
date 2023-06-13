@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
-import io.vertx.core.CompositeFuture
+import io.vertx.core.Future
 import liveplugin.implementation.actions.UnloadPluginAction
 import liveplugin.implementation.common.MapDataContext
 import liveplugin.implementation.common.toFilePath
@@ -54,7 +54,7 @@ object LivePluginProjectLoader {
                 plugins += PluginRunner.runPlugins(liveCommandsPath.listFiles().toLivePlugins(), dummyEvent)
             }
 
-            CompositeFuture.all(plugins).onSuccess { _ ->
+            Future.all(plugins).onSuccess { _ ->
                 SourceStatusService.getInstance(dummyEvent.project!!).update(SourceStatus.PluginsLoaded)
             }
         }
