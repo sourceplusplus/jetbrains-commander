@@ -114,7 +114,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
                 null,
                 mutableSetOf(guideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)!!.firstNotNullOf { it.name }),
                 guideMark.artifactQualifiedName,
-                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0, service.id),
+                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0, service),
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)
             )
         ).onComplete {

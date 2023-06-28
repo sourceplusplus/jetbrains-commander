@@ -104,7 +104,7 @@ class TailLogsCommand(
             ),
             artifactLocation = LiveSourceLocation(
                 source = guideMark.artifactQualifiedName.identifier,
-                service = service.id
+                service = service
             )
         )
         LiveViewLogManager.getInstance(project).getOrCreateLogWindow(
