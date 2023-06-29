@@ -16,6 +16,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.LoadingOrder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Pair
+import com.intellij.ui.components.JBPanel
 import liveplugin.implementation.common.IdeUtil
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
@@ -98,10 +99,10 @@ class Console {
 		text instanceof Throwable ? ConsoleViewContentType.ERROR_OUTPUT : ConsoleViewContentType.NORMAL_OUTPUT
 	}
 
-	private static class MyConsolePanel extends JPanel {
+	private static class MyConsolePanel extends JBPanel<MyConsolePanel> {
 		MyConsolePanel(ExecutionConsole consoleView, ActionGroup toolbarActions) {
 			super(new BorderLayout())
-			def toolbarPanel = new JPanel(new BorderLayout())
+			def toolbarPanel = new JBPanel(new BorderLayout())
 			toolbarPanel.add(ActionManager.instance.createActionToolbar(IdeUtil.livePluginActionPlace, toolbarActions, false).component)
 			add(toolbarPanel, BorderLayout.WEST)
 			add(consoleView.component, BorderLayout.CENTER)
