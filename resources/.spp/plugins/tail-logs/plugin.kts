@@ -35,7 +35,6 @@ import spp.jetbrains.view.window.LiveLogWindow
 import spp.plugin.registerCommand
 import spp.protocol.artifact.ArtifactNameUtils
 import spp.protocol.artifact.ArtifactQualifiedName
-import spp.protocol.instrument.location.LiveSourceLocation
 import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscriberAddress
 import spp.protocol.view.LiveView
 import spp.protocol.view.LiveViewConfig
@@ -101,10 +100,6 @@ class TailLogsCommand(
                 "tail-logs-command",
                 listOf("endpoint_logs"),
                 refreshRateLimit = refreshRate
-            ),
-            artifactLocation = LiveSourceLocation(
-                source = guideMark.artifactQualifiedName.identifier,
-                service = service
             )
         )
         LiveViewLogManager.getInstance(project).getOrCreateLogWindow(
