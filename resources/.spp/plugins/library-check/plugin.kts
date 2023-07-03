@@ -41,7 +41,7 @@ class LibraryCheckCommand(project: Project) : LiveCommand(project) {
             show("Unable to find active services", notificationType = ERROR)
             return
         }
-        val activeServiceInstances = activeServices.flatMap { managementService.getInstances(it.id).await() }
+        val activeServiceInstances = activeServices.flatMap { managementService.getInstances(it).await() }
         if (activeServiceInstances.isEmpty()) {
             show("Unable to find active service instances", notificationType = ERROR)
             return

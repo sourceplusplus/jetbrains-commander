@@ -37,7 +37,6 @@ import spp.protocol.artifact.metrics.MetricType
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_CPM
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_RespTime_AVG
 import spp.protocol.artifact.metrics.MetricType.Companion.Endpoint_SLA
-import spp.protocol.instrument.location.LiveSourceLocation
 import spp.protocol.service.SourceServices.Subscribe.toLiveViewSubscription
 import spp.protocol.utils.fromPerSecondToPrettyFrequency
 import spp.protocol.view.LiveView
@@ -111,10 +110,7 @@ class QuickStatsIndicator(project: Project) : LiveIndicator(project) {
         //todo: support multiple endpoints (need way to cycle between them)
         viewService.addLiveView(
             LiveView(
-                null,
                 mutableSetOf(guideMark.getUserData(EndpointDetector.DETECTED_ENDPOINTS)!!.firstNotNullOf { it.name }),
-                guideMark.artifactQualifiedName,
-                LiveSourceLocation(guideMark.artifactQualifiedName.identifier, 0, service),
                 LiveViewConfig("ACTIVITY", listenMetrics, -1)
             )
         ).onComplete {

@@ -36,7 +36,7 @@ class BootTimeCommand(project: Project) : LiveCommand(project) {
 
         var startTime: LocalDateTime? = null
         managementService.getServices().await().forEach {
-            managementService.getInstances(it.id).await().forEach {
+            managementService.getInstances(it).await().forEach {
                 val instanceStartTime = it.attributes.entries.find { it.key == "Start Time" }?.let {
                     ZonedDateTime.parse(it.value, timeFormatter).withZoneSameInstant(ZoneId.systemDefault())
                         .toLocalDateTime()

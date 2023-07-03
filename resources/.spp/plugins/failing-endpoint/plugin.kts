@@ -149,7 +149,7 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
             service.name,
             true,
             Scope.Endpoint,
-            ceil(managementService.getEndpoints(service.id, 1000).await().size * 0.20).toInt(), //top 20%
+            ceil(managementService.getEndpoints(service, 1000).await().size * 0.20).toInt(), //top 20%
             Order.ASC,
             MetricStep.MINUTE,
             startTime.toInstant(),
