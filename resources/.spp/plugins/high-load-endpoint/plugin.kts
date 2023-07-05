@@ -144,7 +144,7 @@ class HighLoadEndpointIndicator(project: Project) : LiveIndicator(project) {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val service = statusService.getCurrentService() ?: return emptyList()
-        return managementService.sortMetrics(
+        return viewService.sortMetrics(
             Endpoint_CPM.metricId,
             service.name,
             true,
