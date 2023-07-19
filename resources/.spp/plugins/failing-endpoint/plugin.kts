@@ -52,10 +52,11 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
     private val failingIndicators = hashMapOf<GuideMark, GutterMark>()
 
     override suspend fun refreshIndicator() {
-        val currentFailing = getTopFailingEndpoints()
+        val topFailingEndpoints = getTopFailingEndpoints()
+        log.debug("Top failing endpoints: ${topFailingEndpoints.map { it.name }}")
 
         //trigger adds
-        currentFailing.forEach {
+        topFailingEndpoints.forEach {
             val endpointName = it.name
             val sla = it.value.toFloat() / 100.0f
             val startIndicator = !failingEndpoints.containsKey(endpointName)
@@ -73,10 +74,10 @@ class FailingEndpointIndicator(project: Project) : LiveIndicator(project) {
         }
 
         //trigger removes
-        val previousHighLoads = failingEndpoints.filter {
-            !currentFailing.map { it.name }.contains(it.key)
+        val previousFailingEndpoints = failingEndpoints.filter {
+            !topFailingEndpoints.map { it.name }.contains(it.key)
         }
-        previousHighLoads.forEach {
+        previousFailingEndpoints.forEach {
             log.debug("Endpoint ${it.key} is no longer failing")
             failingEndpoints.remove(it.key)?.triggerEvent(INDICATOR_STOPPED, listOf(it.key))
         }

@@ -24,7 +24,7 @@ class ShowCreationCommand(project: Project) : LiveCommand(project) {
         val id = "${className.replace(".", "-")}-lifespan"
         val avgMeterId = "spp-$id-avg".replace("-", "_")
 
-        val serviceInstance = managementService.getInstances(service.id).await().first()
+        val serviceInstance = managementService.getInstances(service).await().first()
         LiveViewChartManager.getInstance(project).showChart(
             serviceInstance.id,
             "Live '${className.substringAfterLast(".")}' Objects",

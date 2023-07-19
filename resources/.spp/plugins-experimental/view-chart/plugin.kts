@@ -35,9 +35,9 @@ class ViewChartCommand(
     override suspend fun triggerSuspend(context: LiveCommandContext) {
         val chartName = context.args.joinToString("_").lowercase()
         val metricType = MetricType.fromBestGuess(chartName)
-        val serviceInstance = managementService.getInstances(
-            statusService.getCurrentService()!!.id
-        ).await().first()
+        val serviceInstance = statusService.getCurrentService()?.let {
+            managementService.getInstances(it).await().firstOrNull()
+        } ?: return
         LiveViewChartManager.getInstance(project).showChart(
             serviceInstance.id,
             metricType.simpleName,
