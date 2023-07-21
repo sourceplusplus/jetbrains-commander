@@ -144,7 +144,7 @@ class SlowEndpointIndicator(project: Project) : LiveIndicator(project) {
         val endTime = ZonedDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.MINUTES) //exclusive
         val startTime = endTime.minusMinutes(2)
         val service = statusService.getCurrentService() ?: return emptyList()
-        val topN = ceil(managementService.getEndpoints(service, 1000).await().size * 0.20).toInt() //top 20%
+        val topN = ceil(managementService.getEndpoints(service, 1000, true).await().size * 0.20).toInt() //top 20%
         if (topN == 0) return emptyList()
 
         return viewService.sortMetrics(
