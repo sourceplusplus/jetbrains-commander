@@ -211,11 +211,6 @@ public final class PluginClassLoader_Fork extends UrlClassLoader implements Plug
     }
 
     @Override
-    public int getInstanceId() {
-        return instanceId;
-    }
-
-    @Override
     public long getEdtTime() {
         return edtTime.get();
     }
